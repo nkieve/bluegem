@@ -1,5 +1,7 @@
 class TitleScreen {
     constructor() {
+        this.assetsLoaded = 0;
+        this.totalAssets = 6;
         this.assets = {
             frame: this.loadImage('public/frame.svg'),
             logo: this.loadImage('public/logo.svg'),
@@ -20,6 +22,9 @@ class TitleScreen {
     loadImage(src) {
         const img = new Image();
         img.src = src;
+        img.onload = () => {
+            this.assetsLoaded++;
+        };
         img.onerror = () => console.error(`Failed to load image: ${src}`);
         return img;
     }
@@ -62,8 +67,6 @@ class TitleScreen {
 
             this.hoverState.startButton = this.isMouseOver(mouseX, mouseY, startButtonX, buttonY, buttonWidth, buttonHeight);
             this.hoverState.configButton = this.isMouseOver(mouseX, mouseY, configButtonX, buttonY, buttonWidth, buttonHeight);
-
-            this.draw(ctx, canvas);
         });
 
         canvas.addEventListener('click', (event) => {
@@ -101,10 +104,28 @@ class TitleScreen {
     }
 
     draw(ctx, canvas) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!this.cachedBackground) {
+            if (this.assets.frame.complete && this.assets.frame.naturalWidth !== 0 &&
+                this.assets.logo.complete && this.assets.logo.naturalWidth !== 0) {
+                
+                this.cachedBackground = document.createElement('canvas');
+                this.cachedBackground.width = canvas.width;
+                this.cachedBackground.height = canvas.height;
+                const bctx = this.cachedBackground.getContext('2d');
 
-        this.drawImage(ctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
-        this.drawImage(ctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
+                this.drawImage(bctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
+                this.drawImage(bctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
+            }
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (this.cachedBackground) {
+            ctx.drawImage(this.cachedBackground, 0, 0);
+        } else {
+             this.drawImage(ctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
+             this.drawImage(ctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
+        }
 
         const scaleFactor = 0.8;
         const buttonWidth = this.assets.startButton.width * scaleFactor;
@@ -370,14 +391,7 @@ class NovelScene {
                 this.frame.complete
             ) {
                 this.sceneLoaded = true;
-
-                const renderLoop = () => {
-                    if (this.sceneLoaded) {
-                        this.drawScene(ctx, canvas);
-                        requestAnimationFrame(renderLoop);
-                    }
-                };
-                renderLoop();
+                this.drawScene(ctx, canvas);
             } else {
                 requestAnimationFrame(checkAssetsLoaded);
             }
@@ -509,15 +523,27 @@ class NovelScene {
 
         const currentScene = this.scenes[this.currentSceneIndex];
         const currentText = currentScene.lines[this.currentLineIndex];
-        this.wrapText(ctx, currentText, textX, textY, maxWidth, 24);
+
+        const cacheKey = `${this.currentSceneIndex}-${this.currentLineIndex}`;
+        if (this.lastTextCacheKey !== cacheKey) {
+             this.cachedWrappedLines = this.calculateWrappedLines(ctx, currentText, maxWidth);
+             this.lastTextCacheKey = cacheKey;
+        }
+
+        let yOffset = 0;
+        const lineHeight = 24;
+        this.cachedWrappedLines.forEach(line => {
+             ctx.fillText(line, textX, textY + yOffset);
+             yOffset += lineHeight;
+        });
 
         ctx.restore();
     }
 
-    wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    calculateWrappedLines(ctx, text, maxWidth) {
         const words = text.split(' ');
         let line = '';
-        let yOffset = 0;
+        const lines = [];
 
         for (let i = 0; i < words.length; i++) {
             const testLine = line + words[i] + ' ';
@@ -525,14 +551,14 @@ class NovelScene {
             const testWidth = metrics.width;
 
             if (testWidth > maxWidth && i > 0) {
-                ctx.fillText(line, x, y + yOffset);
+                lines.push(line);
                 line = words[i] + ' ';
-                yOffset += lineHeight;
             } else {
                 line = testLine;
             }
         }
-        ctx.fillText(line, x, y + yOffset);
+        lines.push(line);
+        return lines;
     }
 
     advanceSceneOrText(ctx, canvas) {
@@ -649,10 +675,18 @@ class CreditsScene {
 
 
             if (this.frame.complete && this.frame.naturalWidth !== 0) {
-                ctx.save();
-                ctx.filter = 'invert(1)';
-                ctx.drawImage(this.frame, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
+                if (!this.invertedFrameCanvas) {
+                    this.invertedFrameCanvas = document.createElement('canvas');
+                    this.invertedFrameCanvas.width = canvas.width;
+                    this.invertedFrameCanvas.height = canvas.height;
+                    const ictx = this.invertedFrameCanvas.getContext('2d');
+                    
+                    ictx.save();
+                    ictx.filter = 'invert(1)';
+                    ictx.drawImage(this.frame, 0, 0, canvas.width, canvas.height);
+                    ictx.restore();
+                }
+                ctx.drawImage(this.invertedFrameCanvas, 0, 0);
             }
 
 
