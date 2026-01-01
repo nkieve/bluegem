@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="script.js" defer></script>
+    <title>Blue:Gem</title>
+</head>
+
+<body>
+    <canvas id="myCanvas" width="1000" height="800"
+        style="border:1px solid #000; display:block;margin: 90px auto;"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('myCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const titleScreen = new TitleScreen();
+
+            const checkAssetsLoaded = () => {
+                if (titleScreen.assetsLoaded === titleScreen.totalAssets) {
+                    titleScreen.draw(ctx, canvas);
+                    titleScreen.setupHoverListeners(canvas, ctx);
+                } else {
+                    requestAnimationFrame(checkAssetsLoaded);
+                }
+            };
+
+            checkAssetsLoaded();
+
+
+            const roseImage = new Image();
+            roseImage.src = 'public/rose_anim.svg';
+
+            const roses = [];
+            for (let y = 100; y <= 700; y += 100) {
+                for (let x = -100; x >= -500; x -= 100) {
+                    const randomXOffset = Math.random() * 50 - 25;
+                    const randomYOffset = Math.random() * 50 - 25;
+                    roses.push({ x: x + randomXOffset, y: y + randomYOffset, opacity: 0.2 });
+                }
+            }
+
+            const vortexCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+
+            const animateRoses = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+                titleScreen.draw(ctx, canvas);
+
+
+                roses.forEach((rose, i) => {
+                    const angle = (Date.now() * 0.001 + i * 0.2) % (Math.PI * 2);
+                    const radius = 200 + i * 8;
+
+                    rose.x = vortexCenter.x + Math.cos(angle) * radius;
+                    rose.y = vortexCenter.y + Math.sin(angle) * radius;
+
+
+                    const distanceToCenter = Math.sqrt(
+                        Math.pow(rose.x - vortexCenter.x, 2) + Math.pow(rose.y - vortexCenter.y, 2)
+                    );
+
+                    if (distanceToCenter < 250 && Math.random() < 0.05) {
+                        ctx.shadowColor = 'blue';
+                        ctx.shadowBlur = 20;
+                    } else {
+                        ctx.shadowColor = 'transparent';
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.globalAlpha = rose.opacity;
+                    ctx.drawImage(roseImage, rose.x, rose.y, 100, 100);
+                });
+
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+
+                requestAnimationFrame(animateRoses);
+            };
+
+            roseImage.onload = () => {
+
+                roses.forEach((rose, i) => {
+                    const angle = i * 0.2;
+                    const radius = 200 + i * 10;
+
+                    rose.x = vortexCenter.x + Math.cos(angle) * radius;
+                    rose.y = vortexCenter.y + Math.sin(angle) * radius;
+                });
+
+                // Draw the background once to avoid clearing it repeatedly
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                animateRoses();
+            };
+        }); 
+    </script>
+</body>
+
+</html>
