@@ -14,6 +14,22 @@
         style="border:1px solid #000; display:block;margin: 90px auto;"></canvas>
 
     <script>
+        // Suppress Chrome extension errors that don't affect the app
+        window.addEventListener('error', (e) => {
+            if (e.message && e.message.includes('message port closed')) {
+                e.preventDefault();
+                return true;
+            }
+        });
+        
+        // Suppress unhandled promise rejections from extensions
+        window.addEventListener('unhandledrejection', (e) => {
+            if (e.reason && e.reason.message && e.reason.message.includes('message port closed')) {
+                e.preventDefault();
+                return true;
+            }
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('myCanvas');
             const ctx = canvas.getContext('2d');
