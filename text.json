@@ -2,6 +2,7 @@
   "scenes": [
     {
       "id": 1,
+      "location": "House Front",
       "bg": "public/bg_housefront.png",
       "characters": [
         "public/lyra_cg1.png"
@@ -14,12 +15,13 @@
         "Lately my heart hurts. I can't explain why.",
         "Tinnitus rings in my ears. Temple to temple.",
         "I wonder if it's because of that incident...",
-        "Akagi said something about it too."    ,
+        "Akagi said something about it too.",
         "She gave me this pendant to help me feel better.                           Maybe it will work? I dont know,                                            I'm not sure about these things."
       ]
     },
     {
       "id": 2,
+      "location": "House Front",
       "bg": "public/bg_housefront.png",
       "characters": [
         "public/lyra_cg1.png"
@@ -31,7 +33,22 @@
       ],
       "lines": [
         "The pendant feels warm against my chest.                                    It has a soothing effect.",
-        "I hope Akagi is right about it helping me.",
+        "I hope Akagi is right about it helping me."
+      ]
+    },
+    {
+      "id": 3,
+      "location": "Pendant",
+      "bg": "public/white_bg.png",
+      "characters": [
+        "public/gem_cg.png"
+      ],
+      "textbox": "public/lyra_box.png",
+      "audio": [
+        "public/audio2_gibby.wav",
+        "public/breeze1_audio.mp3"
+      ],
+      "lines": [
         "Looking closely.",
         "I notice intricate engravings on the pendant,                            and a Blue Gem embedded in its center.",
         "I wonder what mineral it is? It looks beautiful.                            I dont know a lot about minerals though.",
@@ -39,9 +56,9 @@
         "I should head back inside now."
       ]
     },
-    
     {
-      "id": 3,
+      "id": 4,
+      "location": "Bedroom",
       "bg": "public/bg_room.png",
       "characters": [
         "public/lyra_cg1.png"
@@ -52,7 +69,7 @@
         "public/walkinghouse_audio.mp3"
       ],
       "lines": [
-        "I wonder if mom noticed I'm home yet.",
+        "I wonder if mom noticed if I'm home yet.",
         "She really worries about me sometimes.                                    I hate to see her like that.                                                 It's not fair to her.",
         "Looking around.... I realized she might not be home.",
         "She has been going to these work meeting daily.                            I really do feel like I burden her at times.",
@@ -63,15 +80,14 @@
         "It really hurts.                                                      I wish I could make it better for her.",
         "Maybe I can do something special for her.                                   I want to see her smile again.",
         "If I recall right... she loves the flowers by the riverbank.                            Maybe I can pick some for her."
-
       ]
     },
-
-           {
-
-      "id": 4,
+    {
+      "id": 5,
+      "location": "Bedroom",
       "bg": "public/bg_room.png",
-      "characters": [
+      "characters": [ 
+        "public/lyra_cg5.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
@@ -81,19 +97,22 @@
       "lines": [
         "Scurrying across the room, I look for a jacket to wear outside.",
         "It's quite cold outside, its that time of the year, after all.",
-        "I need some cash too, so I can afford the bus ride to the riverbanks.                             The river is a bit far from here.",
-        "I remember my mother told me a story when I was little,                             about the river... it's known to be a channel for the magic of a certain Goddess...                              the people in my town revere and worship the river.                              It's as sacred to them as life is. They say the river has potent spirtitual energies.                             Maybe that's why mom likes the flowers there so much.",
-        "The elders of the town speak of 'Moksha' often...                             I think it means liberation, or release from suffering.                             I'm not really sure about any of that, but I think it's beautiful.",
-        "To have something to believe in, and hold onto... in times of turmoil ",
-        "I should quickly check my room for the jacket and cash before heading out."
-
+        "I need some cash too, so I can afford the bus ride to the                              riverbanks.      The river is a bit far from here.",
+        "I remember my mother told me a story when I was little.",
+        "The river... it's known to be a channel for the magic of a            certain Goddess...                                                        the people in my town revere and worship the river.",
+        "It's as sacred to them as life is. They say the river has             potent spirtitual energies.                                            Maybe that's why mom likes the flowers there so much.",
+        "The elders of the town speak of 'Moksha' often...                           I think it means liberation, or release from suffering.",
+        "I'm not really sure about any of that,                                              but I think it's beautiful.",
+        "To have something to believe in, and hold onto...                              in times of turmoil. ",
+        "I should quickly check my room for the jacket and cash                              before heading out."
       ]
     },
     {
-
-      "id": 5,
+      "id": 6,
+      "location": "Bedroom",
       "bg": "public/bg_room.png",
       "characters": [
+        "public/lyra_cg5.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
@@ -106,62 +125,58 @@
         "I walk over to it and see a new message notification.",
         "It's from Akagi.",
         "She told me to go to the riverbank today.",
-        "Well, I was already planning to go there to pick flowers for mom.",
+        "Well, I was already planning to go there to pick flowers                              for mom.",
         "Maybe I can meet up with her there.",
         "I should reply to her message and let her know I'll be there.",
-        "I hope she is okay. It's been a while since we last met and she worries me a little.",
+        "I hope she is okay. It's been a while since we last met and                              she worries me a little.",
         "I grab my things and head out the door in a hurry."
       ]
     },
-        {
-
-      "id": 6,
-      "bg": "public/bg_room.png", 
-      "characters": [
-      ],
+    {
+      "id": 7,
+      "location": "Bus",
+      "bg": "public/bg_bus.png",
+      "characters": [],
       "textbox": "public/lyra_box.png",
       "audio": [
         "public/audio1_gibby.ogg",
         "public/bus_audio.mp3"
-        
-
       ],
       "lines": [
         "After waiting for a while, I get on the bus.",
         "It's full of people. I don't really care for crowded places.",
         " They make me anxious. I think I am apalled by most people. ",
-        " They feel so ingenuine and hollow... like empty shells. I try to avoid them as much as possible.",
+        " They feel so ingenuine and hollow... like empty shells.                              I try to avoid them as much as possible.",
         "Sometimes I have no choice though. Today is one of those days.",
         "Overhearing the conversations of strangers makes me uneasy.",
         "I try to focus on the scenery outside the window instead.",
         "I really should've brought my earphones.",
-        "I'm always forgetting important things.... I really hate that about myself.",
-        "There is a child crying and throwing a tantrum... It really irks me...",
+        "I'm always forgetting important things....                              I really hate that about myself.",
+        "There is a child crying and throwing a tantrum...                              It really irks me...",
         "It's like nails on a chalkboard.",
         "A high-pitched, grating sound.",
         "Like the scratching of metal. I can't stand it.",
         "I really can't.",
         "I try to cover my ears, but it's no use.",
-        "Sitting and hoping for the ride to be over soon. Nothing more I can really do.",
+        "Sitting and hoping for the ride to be over soon.                              Nothing more I can really do.",
         "..........please stop..........",
         "The bus ride feels interminable.",
         "..................................",
         "...................................",
-        "My dislike for human kind only seems to grow stronger with each passing moment.",
+        "My dislike for human kind only seems to grow stronger                              with each passing moment.",
         "....................................",
         "After 20 minutes, I finally reach the riverbank stop.",
         "Sweet relief... I was saved"
       ]
     },
     {
-
-      "id": 7,
-      "bg": "public/bg_park.png", 
-      "characters": [
-      ],
+      "id": 8,
+      "location": "Park",
+      "bg": "public/bg_park.png",
+      "characters": [],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio4_gibby.wav",
+        "public/audio_minoyim.mp3",
         "public/parkwalk_audio.mp3"
       ],
       "lines": [
@@ -171,19 +186,25 @@
         "The brisk air feels nice against my skin.",
         "I guess it's nice to be outside sometimes.",
         "I see a strange figure sitting on a bench up ahead.",
-        "It seems like a woman with horns...? That's odd. It must be some kind of cosplay.",
+        ".............................",
+        ".............................",
+        ".............................",
+        "It seems like a woman with horns...? That's odd.                                        It must be some kind of cosplay.",
         "I dont remember there being any conventions around here lately.",
-        "I decide to walk past her quickly, not wanting to engage in conversation.",
+        "I decide to walk past her quickly,                                          not wanting to engage in conversation.",
         "I sense a really strange air from her. It's unsettling. Almost... nauseating.",
-        "I pick up my pace and hurry towards the riverbank."
+        "I pick up my pace and hurry towards the riverbank.",
+        ".............................",
+        ".............................",
+        ".............................",
+        "............................."
       ]
     },
-        {
-
-      "id": 8,
-      "bg": "public/bg_riverside.png", 
-      "characters": [
-      ],
+    {
+      "id": 9,
+      "location": "Riverbank",
+      "bg": "public/bg_riverside.png",
+      "characters": [],
       "textbox": "public/lyra_box.png",
       "audio": [
         "public/breeze2_audio.mp3"
@@ -195,36 +216,35 @@
       ]
     },
     {
-
-      "id": 9,
-      "bg": "public/bg_riverside.png", 
-      "characters": [
-      ],
+      "id": 10,
+      "location": "Riverbank",
+      "bg": "public/bg_riverside.png",
+      "characters": [],
       "textbox": "public/lyra_box.png",
       "audio": [
         "public/audio3_gibby.wav"
       ],
       "lines": [
-        "The smell of the river is refreshing. Gives you a sense of calm.",
-        "They say humans are mostly made of water.",                             
+        "The smell of the river is refreshing. Gives you a sense of                          calm.",
+        "They say humans are mostly made of water.",
         "Maybe that's why being near water bodies makes us feel better.",
         "I sit down by the riverbank and take a deep breath.",
-        "I get really tired and overwhelmed when I'm outside for too long.                            It's hard to explain.",
-        "I think it's because im rather asocial and introverted.                             Crowds and noise drain me.",
-        "I look at the river tide, as it ebbs and flows, hitting the bank like a crash.",
-        "I see the flowers my mom likes alongside the river... although I do see some of them are stamped and crushed.",                                             
-        "Perhaps it was the doing of the juvenile, or an animal. Either way, it's disheartening to see.",
-        "The mystical river..... that the elders of the town revere.... I really wonder if the stories are true.",
-        "The so called 'Moksha' is also something western scholars speak of when using nature as a means of temporary escape from suffering.                             The sublime.",
+        "I get really tired and overwhelmed when I'm outside for too                           long. It's hard to explain.",
+        "I think it's because im rather asocial and introverted.                                      Crowds and noise drain me.",
+        "I look at the river tide, as it ebbs and flows,                                         hitting the bank like a crash.",
+        "I see the flowers my mom likes alongside the river...                         although I do see some of them are stamped and crushed.",
+        "Perhaps it was the doing of the juvenile, or an animal.                                         Either way, it's disheartening to see.",
+        "The mystical river..... that the elders of the town revere....                 I really wonder if the stories are true.",
+        "The so called 'Moksha' is also something western scholars                 speak of when using nature as a means of temporary escape from suffering.                                              The sublime.",
         "I hear footsteps approaching in my direction...                            I hope it's Akagi."
       ]
     },
     {
-
-      "id": 10,
-      "bg": "public/bg_riverside.png", 
+      "id": 11,
+      "location": "Riverbank",
+      "bg": "public/bg_riverside.png",
       "characters": [
-        "public/lyra_cg1.png"
+        "public/lyra_cg4.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
@@ -232,7 +252,7 @@
       ],
       "lines": [
         "A perplexing... almost unnerving feeling washes over me.",
-        "I get up, and see two figures rising from the horizon in the distance.",
+        "I get up, and see two figures rising from the horizon                                         in the distance.",
         "Puzzled, and shocked, I squint my eyes to get a better look.",
         "Is Akagi bringing someone with her? That's odd.",
         "She never mentioned that.... huh........",
@@ -242,7 +262,7 @@
         "My pendant starts to glow faintly against my chest.",
         "My chest starts to hurt slightly... a dull ache.",
         "I hold onto my pendant tightly, trying to steady myself.",
-        "As they approach, my pendant keeps getting warmer, and the ache intensifies.",
+        "As they approach, my pendant keeps getting warmer,                                         and the ache intensifies.",
         "The air starts to feel heavy, almost suffocating.",
         "A spella takes over me... I feel lightheaded... dizzy...",
         "I try to steady myself, but my vision blurs...",
@@ -256,11 +276,10 @@
       ]
     },
     {
-
-      "id": 11,
-      "bg": "public/bg_building.png", 
-      "characters": [
-      ],
+      "id": 12,
+      "location": "Moksha Gate",
+      "bg": "public/bg_building.png",
+      "characters": [],
       "textbox": "public/lyra_box.png",
       "audio": [
         "public/audio1_gibby.ogg"
@@ -268,7 +287,7 @@
       "lines": [
         "The darkness slowly lifts from my mind.",
         "Light shines into my eyes as I regain consciousness.",
-        "I wake and see a building before me..... It has a strange cadre",
+        "I wake and see a building before me..... It has a strange                                         cadre",
         "Archietonics... that would be hard to describe.",
         "Unlike anything I have ever seen before.",
         "Almost like a castle....",
@@ -276,19 +295,19 @@
         "...................",
         "Where am I? How did I get here?",
         "................ ........",
-        "....................", 
+        "....................",
         "Where did those two figures go?",
         ".........",
         ".....",
         "..."
       ]
     },
-      {
-
-      "id": 12,
-      "bg": "public/bg_building.png", 
+    {
+      "id": 13,
+      "location": "Moksha Gate",
+      "bg": "public/bg_building.png",
       "characters": [
-        "public/lyra_cg1.png"
+        "public/lyra_cg5.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
@@ -302,15 +321,15 @@
       ]
     },
     {
-
-      "id": 13,
-      "bg": "public/bg_building.png", 
+      "id": 14,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/oshur_cg.png"
       ],
       "textbox": "public/oshur_box.png",
       "audio": [
-        "public/audio_orchid.mp3"
+        "public/audio_mari.mp3"
       ],
       "lines": [
         "What are you doing here?......",
@@ -322,15 +341,15 @@
       ]
     },
     {
-
-      "id": 14,
-      "bg": "public/bg_building.png", 
+      "id": 15,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
-        "public/lyra_cg1.png"
+        "public/lyra_cg3.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio_orchid.mp3"
+        "public/audio_mari.mp3"
       ],
       "lines": [
         "It's that horned lady.. from before......",
@@ -340,21 +359,21 @@
         ".....",
         "...",
         "I reply, 'I'm not sure how I got here either...'",
-        "I tell her how I was at the riverbank, and then everything went dark...",
+        "I tell her how I was at the riverbank,                                         and then everything went dark...",
         "She listens frantically, her expression softening slightly.",
-        "After I finish, she sighs in relief, and drops the perplexed expression."
+        "After I finish, she sighs in relief, and drops the perplexed                           expression."
       ]
     },
-     {
-
-      "id": 15,
-      "bg": "public/bg_building.png", 
+    {
+      "id": 16,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/oshur_cg.png"
       ],
       "textbox": "public/oshur_box.png",
       "audio": [
-        "public/audio_orchid.mp3"
+        "public/audio_mari.mp3"
       ],
       "lines": [
         "Hmmmm... that makes sense......",
@@ -363,7 +382,7 @@
         "You're lucky Lady Shya was kind enough to allow you entry......",
         ".........",
         ".....",
-        "The name that has been graciously given to me is Oshur, I'm the caretaker of Lady Shya's sanctuary......",
+        "The name that has been graciously given to me is Oshur,                                         I'm the caretaker of Lady Shya's sanctuary......",
         "Lady Shya must have approaced you in your realm of origin......",
         "That can often causes mortals to faint, or lose their sanity",
         "Lady Shya often seeks out those in need of solace and refuge......",
@@ -376,16 +395,16 @@
         "..."
       ]
     },
-      {
-
-      "id": 16,
-      "bg": "public/bg_building.png", 
+    {
+      "id": 17,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/lyra_cg2.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio_orchid.mp3"
+        "public/audio_mari.mp3"
       ],
       "lines": [
         "I fall back down onto the ground, stunned......",
@@ -412,35 +431,35 @@
       ]
     },
     {
-
-      "id": 17,
-      "bg": "public/bg_building.png", 
+      "id": 18,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/oshur_cg.png"
       ],
       "textbox": "public/oshur_box.png",
       "audio": [
-        "public/audio_orchid.mp3"
+        "public/audio_mari.mp3"
       ],
       "lines": [
         "Lets not be hasty mortal...",
         "Make your spirit calm first......",
         "Anger is unbecoming of one who seeks Moksha......",
-        "If you keep this up, I might have to use some of my powers to subdue you......",
-        "Even if you are chosen by Lady Shya...... It is my duty to maintain order here......",
+        "If you keep this up, I might have to use some of my powers                                         to subdue you......",
+        "Even if you are chosen by Lady Shya......                                         It is my duty to maintain order here......",
         "....."
       ]
     },
     {
-
-      "id": 18,
-      "bg": "public/bg_building.png", 
+      "id": 19,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/lyra_cg2.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio_orchid.mp3"
+        "public/audio_mari.mp3"
       ],
       "lines": [
         "I feel a force taking over me......",
@@ -464,23 +483,23 @@
         "....."
       ]
     },
-        {
-
-      "id": 19,
-      "bg": "public/bg_building.png", 
+    {
+      "id": 20,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/oshur_cg.png"
       ],
       "textbox": "public/oshur_box.png",
       "audio": [
-        "public/audio6_gibby.wav"
+        "public/audio2_orchid.wav"
       ],
       "lines": [
-        "Every hundred years, Lady Shya selects a mortal worthy of ascending to God-hood......",
-        "The cycle of rebirth and suffering seeks out a new vessel to host her divine essence......",
-        "What you mortals call 'gods' are merely vessels for higher beings to channel their power through......",
+        "Every hundred years, Lady Shya selects a mortal worthy of                                         ascending to God-hood......",
+        "The cycle of rebirth and suffering seeks out a new vessel to host                                         her divine essence......",
+        "What you mortals call 'gods' are merely vessels for higher                                         beings to channel their power through......",
         "Your affinity with the Blue Gem marks you as one such vessel......",
-        "Your realm of origin is simply a multifaceted information-cypher......",
+        "Your realm of origin is simply a multifaceted                                         information-cypher......",
         "A construct created by higher beings to simulate reality......",
         "Lady Shya exists beyond such constructs......",
         "Your greed, suffering, and desires are all illusions......",
@@ -488,7 +507,7 @@
         "Illusions, yet so real, nonetheless......",
         "It's a form of mortal magic that causes hurt and suffering......",
         ".........",
-        "Lady shya herself is the 800,000th reincarnate of the divine cycle of suffering......",
+        "Lady shya herself is the 800,000th reincarnate of the                                         divine cycle of suffering......",
         "The marks on your wrist, the wrath that wracks your mind......",
         "The pain in yout chest, the ringing in your ears......",
         "All these are symptoms of your mortal coil breaking down......",
@@ -500,36 +519,32 @@
       ]
     },
     {
-
-      "id": 20,
-      "bg": "public/bg_building.png", 
+      "id": 21,
+      "location": "Moksha Sanctuary",
+      "bg": "public/bg_building.png",
       "characters": [
         "public/lyra_cg2.png"
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio6_gibby.wav"
+        "public/audio2_orchid.wav"
       ],
       "lines": [
         "God-hood.... "
       ]
     },
     {
-
-      "id": 21,
-      "bg": "public/bg_building.png", 
-      "characters": [
-      ],
+      "id": 22,
+      "location": "To Be Continued",
+      "bg": "public/bg_building.png",
+      "characters": [],
       "textbox": "public/lyra@2x.png",
       "audio": [
-        "public/audio6_gibby.wav"
+        "public/audio2_orchid.wav"
       ],
       "lines": [
         "To be continued......"
       ]
     }
-
-
-
   ]
 }

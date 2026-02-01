@@ -204,6 +204,17 @@ class NovelScene {
         this.hoverState = {
             emblem: false
         };
+
+        
+        this.loadingAfterSceneIds = new Set([6, 7, 8, 11, 22]);
+        this.loadingOverlay = new LoadingOverlay();
+
+        // NEW: Auto mode state (does not change constructor signature)
+        this.autoMode = false;
+        this.autoAdvanceDelayMs = 1700; // tweak timing here
+        this._autoTimer = null;
+        this._autoCtx = null;
+        this._autoCanvas = null;
     }
 
     async loadScene(ctx, canvas) {
@@ -222,9 +233,17 @@ class NovelScene {
 
 
         canvas.addEventListener('click', () => {
+            
+            if (this.loadingOverlay?.isActive) return;
+
+            
+            if (this.autoMode) {
+                this.disableAuto();
+                return;
+            }
+
             this.advanceSceneOrText(ctx, canvas);
         });
-
 
         this.addReturnToTitleButton(canvas, ctx);
     }
@@ -262,7 +281,7 @@ class NovelScene {
         volUpButton.innerText = '>> Vol + <<';
         volUpButton.style.position = 'absolute';
         volUpButton.style.top = `calc(${canvas.getBoundingClientRect().bottom}px + 10%)`;
-        volUpButton.style.left = 'calc(70% - 9%)'; // Move 5% more to the left
+        volUpButton.style.left = 'calc(70% - 9%)'; 
         volUpButton.style.transform = 'translateX(-50%)';
         volUpButton.style.fontFamily = 'Arial, sans-serif';
         volUpButton.style.fontSize = '18px';
@@ -286,6 +305,64 @@ class NovelScene {
         volDownButton.style.textShadow = '1px 1px 2px black';
 
 
+        
+        const autoButton = document.createElement('div');
+        autoButton.innerText = 'AUTO';
+        autoButton.style.position = 'fixed';
+        autoButton.style.top = '12px';
+        autoButton.style.left = '12px';
+        autoButton.style.transform = 'none';
+        autoButton.style.zIndex = '99999';
+        autoButton.style.fontFamily = 'Arial, sans-serif';
+        autoButton.style.fontSize = '14px';
+        autoButton.style.color = '#111';
+        autoButton.style.cursor = 'pointer';
+        autoButton.style.textAlign = 'center';
+        autoButton.style.textShadow = 'none';
+
+        // simple grey pill look
+        autoButton.style.background = '#d0d0d0';
+        autoButton.style.border = '1px solid #9a9a9a';
+        autoButton.style.borderRadius = '6px';
+        autoButton.style.padding = '6px 10px';
+        autoButton.style.userSelect = 'none';
+
+        const syncAutoButtonStyle = () => {
+            
+            autoButton.innerText = 'AUTO';
+
+            if (this.autoMode) {
+                
+                autoButton.style.border = '1px solid #2b78ff';
+                autoButton.style.boxShadow = '0 0 10px rgba(43, 120, 255, 0.95)';
+                autoButton.style.background = '#cfcfcf';
+            } else {
+                
+                autoButton.style.border = '1px solid #9a9a9a';
+                autoButton.style.boxShadow = 'none';
+                autoButton.style.background = '#d0d0d0';
+            }
+        };
+        syncAutoButtonStyle();
+
+        autoButton.addEventListener('click', () => {
+            if (this.autoMode) {
+                this.disableAuto();
+            } else {
+                this.enableAuto(ctx, canvas);
+            }
+            syncAutoButtonStyle();
+        });
+
+        
+        autoButton.addEventListener('mouseenter', () => {
+            autoButton.style.filter = 'brightness(0.95)';
+        });
+        autoButton.addEventListener('mouseleave', () => {
+            autoButton.style.filter = 'none';
+        });
+
+        
         [returnButton, muteButton, volUpButton, volDownButton].forEach((button) => {
             button.addEventListener('mouseenter', () => {
                 button.style.textDecoration = 'underline';
@@ -295,19 +372,22 @@ class NovelScene {
             });
         });
 
-
         returnButton.addEventListener('click', () => {
+            
+            this.disableAuto();
+
             console.log('Return to Title Screen button clicked');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const titleScreen = new TitleScreen();
             titleScreen.setupHoverListeners(canvas, ctx);
             titleScreen.draw(ctx, canvas);
+
             returnButton.remove();
             muteButton.remove();
             volUpButton.remove();
             volDownButton.remove();
+            autoButton.remove(); // NEW
         });
-
 
         muteButton.addEventListener('click', () => {
             if (this.currentAudio) {
@@ -337,8 +417,164 @@ class NovelScene {
         document.body.appendChild(muteButton);
         document.body.appendChild(volUpButton);
         document.body.appendChild(volDownButton);
+        document.body.appendChild(autoButton); // NEW
 
         console.log('Control buttons added to DOM');
+    }
+
+    // NEW: Auto mode helpers
+    enableAuto(ctx, canvas) {
+        this.autoMode = true;
+        this._autoCtx = ctx;
+        this._autoCanvas = canvas;
+        this._clearAutoTimer();
+        this._scheduleAutoStep();
+    }
+
+    disableAuto() {
+        this.autoMode = false;
+        this._clearAutoTimer();
+    }
+
+    _clearAutoTimer() {
+        if (this._autoTimer) {
+            clearTimeout(this._autoTimer);
+            this._autoTimer = null;
+        }
+    }
+
+    _scheduleAutoStep() {
+        if (!this.autoMode) return;
+        if (this._autoTimer) return;
+
+        // Don’t advance while overlay is active or while assets aren’t loaded yet
+        if (this.loadingOverlay?.isActive) return;
+        if (!this.sceneLoaded) return;
+
+        this._autoTimer = setTimeout(() => {
+            this._autoTimer = null;
+
+            if (!this.autoMode) return;
+            if (this.loadingOverlay?.isActive) return;
+
+            // Advance one line/scene
+            this.advanceSceneOrText(this._autoCtx, this._autoCanvas);
+
+            // Schedule next
+            this._scheduleAutoStep();
+        }, this.autoAdvanceDelayMs);
+    }
+
+    drawText(ctx, canvas) {
+        const textBoxWidth = canvas.width * 0.8;
+        const textBoxHeight = this.textBox.height * (textBoxWidth / this.textBox.width);
+        const textBoxX = (canvas.width - textBoxWidth) / 2;
+        const textBoxY = canvas.height - textBoxHeight - 20;
+
+        ctx.font = '20px "MS Gothic"';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+
+        const padding = 20;
+        const textX = textBoxX + padding + textBoxWidth * 0.1;
+        const textY = textBoxY + padding;
+        const maxWidth = textBoxWidth - 2 * padding;
+
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        const currentScene = this.scenes[this.currentSceneIndex];
+        const currentText = currentScene.lines[this.currentLineIndex];
+
+        const cacheKey = `${this.currentSceneIndex}-${this.currentLineIndex}`;
+        if (this.lastTextCacheKey !== cacheKey) {
+             this.cachedWrappedLines = this.calculateWrappedLines(ctx, currentText, maxWidth);
+             this.lastTextCacheKey = cacheKey;
+        }
+
+        let yOffset = 0;
+        const lineHeight = 24;
+        this.cachedWrappedLines.forEach(line => {
+             ctx.fillText(line, textX, textY + yOffset);
+             yOffset += lineHeight;
+        });
+
+        ctx.restore?.();
+
+        
+        this._scheduleAutoStep();
+    }
+
+    calculateWrappedLines(ctx, text, maxWidth) {
+        const words = text.split(' ');
+        let line = '';
+        const lines = [];
+
+        for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+
+            if (testWidth > maxWidth && i > 0) {
+                lines.push(line);
+                line = words[i] + ' ';
+            } else {
+                line = testLine;
+            }
+        }
+        lines.push(line);
+        return lines;
+    }
+
+    advanceSceneOrText(ctx, canvas) {
+        const currentScene = this.scenes[this.currentSceneIndex];
+
+        this.currentLineIndex++;
+        if (this.currentLineIndex >= currentScene.lines.length) {
+            this.currentSceneIndex++;
+
+            if (currentScene.id === 21) {
+                
+                this.disableAuto();
+
+                if (this.audio.length > 0) {
+                    this.audio.forEach((audio) => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    });
+                }
+
+                this.sceneLoaded = false;
+                const creditsScene = new CreditsScene();
+                creditsScene.start(ctx, canvas);
+                return;
+            }
+
+            if (this.currentSceneIndex >= this.scenes.length) {
+                this.currentSceneIndex = 0;
+            }
+
+            const shouldShowLoading = this.loadingAfterSceneIds.has(currentScene.id);
+            this.sceneLoaded = false;
+
+            if (shouldShowLoading) {
+                this.loadingOverlay.start(ctx, canvas, {
+                    message: '',
+                    isDone: () => this.sceneLoaded === true,
+                    minDurationMs: 2000,
+                    frameImg: this.frame
+                });
+            }
+
+            this.loadCurrentScene(ctx, canvas);
+        } else {
+            this.drawScene(ctx, canvas);
+        }
     }
 
     loadCurrentScene(ctx, canvas) {
@@ -357,11 +593,11 @@ class NovelScene {
 
         this.audio = sceneAudio.map((src) => {
             const audio = new Audio(src);
-            audio.loop = src.includes('breeze') || src.includes('background'); // Loop only background audio
+            audio.loop = src.includes('breeze') || src.includes('background'); 
             return audio;
         });
 
-        // Play the audio for the current scene
+        
         if (this.audio.length > 0) {
             this.currentAudio = this.audio[0];
             this.audio.forEach((audio) => {
@@ -391,7 +627,15 @@ class NovelScene {
                 this.frame.complete
             ) {
                 this.sceneLoaded = true;
+
                 this.drawScene(ctx, canvas);
+
+                if (this.loadingOverlay?.isActive) {
+                    this.loadingOverlay.setUnderlayFromCanvas(canvas);
+                }
+
+                // NEW: if auto is on, resume scheduling once scene is ready
+                this._scheduleAutoStep();
             } else {
                 requestAnimationFrame(checkAssetsLoaded);
             }
@@ -399,7 +643,7 @@ class NovelScene {
 
         checkAssetsLoaded();
 
-        if (currentScene.id === 10) {
+        if (currentScene.id === 11) {
             this.startStrobeEffect(ctx, canvas, currentScene);
         }
     }
@@ -445,20 +689,24 @@ class NovelScene {
         const innerFrameHeight = canvas.height * 0.9;
 
 
-
-
         const bgWidth = innerFrameWidth * 0.9;
         const bgHeight = innerFrameHeight * 0.9;
         const bgX = innerFrameX + (innerFrameWidth - bgWidth) / 2;
         const bgY = innerFrameY + (innerFrameHeight - bgHeight) / 2;
         ctx.drawImage(this.bg, bgX, bgY, bgWidth, bgHeight);
 
-
         this.characters.forEach((character, index) => {
-            const characterWidth = innerFrameWidth * 0.38;
+            const isScene3 = this.scenes[this.currentSceneIndex]?.id === 3;
+            const isLyraCG5 = character.src.includes("lyra_cg5.png");
+            const scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7 : 1; 
+
+            const characterWidth = innerFrameWidth * 0.38 * scaleFactor;
             const characterHeight = character.height * (characterWidth / character.width);
-            const characterX = innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5);
+            const characterX = isScene3
+                ? innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5) - innerFrameWidth * 0.1 
+                : innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5);
             const characterY = innerFrameY + (innerFrameHeight - characterHeight) / 1.2;
+
             ctx.drawImage(character, characterX, characterY, characterWidth, characterHeight);
         });
 
@@ -537,7 +785,10 @@ class NovelScene {
              yOffset += lineHeight;
         });
 
-        ctx.restore();
+        ctx.restore?.(); 
+
+        
+        this._scheduleAutoStep();
     }
 
     calculateWrappedLines(ctx, text, maxWidth) {
@@ -567,7 +818,10 @@ class NovelScene {
         this.currentLineIndex++;
         if (this.currentLineIndex >= currentScene.lines.length) {
             this.currentSceneIndex++;
+
             if (currentScene.id === 21) {
+                // NEW: stop auto when going to credits
+                this.disableAuto();
 
                 if (this.audio.length > 0) {
                     this.audio.forEach((audio) => {
@@ -585,7 +839,19 @@ class NovelScene {
             if (this.currentSceneIndex >= this.scenes.length) {
                 this.currentSceneIndex = 0;
             }
+
+            const shouldShowLoading = this.loadingAfterSceneIds.has(currentScene.id);
             this.sceneLoaded = false;
+
+            if (shouldShowLoading) {
+                this.loadingOverlay.start(ctx, canvas, {
+                    message: '',
+                    isDone: () => this.sceneLoaded === true,
+                    minDurationMs: 2000,
+                    frameImg: this.frame
+                });
+            }
+
             this.loadCurrentScene(ctx, canvas);
         } else {
             this.drawScene(ctx, canvas);
@@ -636,6 +902,63 @@ class NovelScene {
 
 
         ctx.drawImage(this.textBox, 0, canvas.height * 0.8, canvas.width, canvas.height * 0.2);
+    }
+}
+
+class TransitionScene {
+    constructor() {
+        this.duration = 800; 
+        this.startTime = null;
+        this.isActive = false;
+        this.type = 'fade';
+        this.currentColor = 'black';
+        this.callback = null;
+        this.callbackParams = null;
+    }
+
+    start(type = 'fade', color = 'black', callback = null, callbackParams = null) {
+        this.type = type;
+        this.currentColor = color;
+        this.startTime = Date.now();
+        this.isActive = true;
+        this.callback = callback;
+        this.callbackParams = callbackParams;
+    }
+
+    update(ctx, canvas) {
+        if (!this.isActive) return false;
+
+        const elapsed = Date.now() - this.startTime;
+        const progress = Math.min(elapsed / this.duration, 1);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        
+        if (progress < 0.5) {
+            const alpha = progress * 2;
+            ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+            const alpha = (progress - 0.5) * 2;
+            ctx.fillStyle = this.currentColor;
+            ctx.globalAlpha = 1 - alpha;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1;
+        }
+
+        if (progress >= 1) {
+            this.isActive = false;
+            if (this.callback) {
+                this.callback(...this.callbackParams);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    isTransitioning() {
+        return this.isActive;
     }
 }
 
@@ -721,3 +1044,216 @@ class CreditsScene {
         this.audio.currentTime = 0;
     }
 }
+
+
+class LoadingOverlay {
+    constructor() {
+        this.isActive = false;
+        this._raf = null;
+        this._startedAt = 0;
+        this._minDurationMs = 2000;
+        this._isDone = null;
+        this._message = '';
+
+        
+        this._overlayAlpha = 1;
+        this._logoAlpha = 0;
+        this._textAlpha = 0;
+
+        
+        this._roseImg = new Image();
+        this._roseImg.src = 'public/rose_anim.svg';
+
+        this._logoImg = new Image();
+        this._logoImg.src = 'public/logo.svg';
+
+        
+        this._roses = [];
+        this._tl = null;
+        this._fadingOut = false;
+        this._animation_finished = false;
+    }
+
+    start(ctx, canvas, { message = '', isDone, minDurationMs = 2000, frameImg = null } = {}) {
+        this.stop(true);
+
+        this.isActive = true;
+
+        
+        this._underlayCanvas = null;
+
+        this._startedAt = performance.now();
+        this._minDurationMs = minDurationMs;
+        this._isDone = typeof isDone === 'function' ? isDone : (() => false);
+        this._message = message;
+
+        this._overlayAlpha = 1;
+        this._logoAlpha = 0;
+        this._textAlpha = 0;
+        this._fadingOut = false;
+        this._animation_finished = false;
+
+        
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        const roseCount = 20;
+        this._roses = Array.from({ length: roseCount }, (_, i) => {
+            const angle = (Math.PI * 2 * i) / roseCount + (Math.random() - 0.5) * 0.4;
+            const dist = Math.max(canvas.width, canvas.height) * (0.55 + Math.random() * 0.25);
+
+            return {
+                x: cx + (Math.random() - 0.5) * 50,
+                y: cy + (Math.random() - 0.5) * 50,
+                rot: Math.random() * 360,
+                s: 0.45 + Math.random() * 0.35,
+                a: 1,
+                tx: cx + Math.cos(angle) * dist,
+                ty: cy + Math.sin(angle) * dist,
+                trot: (Math.random() * 360) + 360
+            };
+        });
+
+        
+        this._tl = gsap.timeline({
+            defaults: { ease: 'none' },
+            onComplete: () => {
+                this._animation_finished = true;
+            }
+        });
+
+        
+        this._roses.forEach((r) => {
+            this._tl.to(r, { x: r.tx, y: r.ty, rot: r.rot + r.trot, duration: 2 }, 0);
+            this._tl.to(r, { a: 0, duration: 2 }, 0);
+        });
+
+        
+        this._tl.to(this, { _logoAlpha: 1, duration: 0.7, ease: 'power1.out' }, 0.25);
+
+        const tick = (t) => {
+            if (!this.isActive) return;
+
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (this._underlayCanvas) {
+                ctx.drawImage(this._underlayCanvas, 0, 0, canvas.width, canvas.height);
+            }
+
+            
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.globalAlpha = this._overlayAlpha;
+
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const r1 = Math.max(canvas.width, canvas.height) * 0.7;
+            const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r1);
+            g.addColorStop(0, 'rgba(200, 200, 200, 0.9)');
+            g.addColorStop(0.45, 'rgba(235, 235, 235, 0.55)');
+            g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (this._roseImg.complete && this._roseImg.naturalWidth !== 0) {
+                this._roses.forEach((r) => {
+                    const w = 120 * r.s;
+                    const h = 120 * r.s;
+                    ctx.save();
+                    ctx.globalAlpha = r.a;
+                    ctx.translate(r.x, r.y);
+                    ctx.rotate((r.rot * Math.PI) / 180);
+                    ctx.drawImage(this._roseImg, -w / 2, -h / 2, w, h);
+                    ctx.restore();
+                });
+            }
+
+            if (this._logoImg.complete && this._logoImg.naturalWidth !== 0 && this._logoAlpha > 0) {
+                const baseLogoW = Math.min(canvas.width * 0.42, 520);
+                const logoW = Math.min(baseLogoW * 2, canvas.width * 0.9);
+
+                const logoH = this._logoImg.height * (logoW / this._logoImg.width);
+                const logoX = (canvas.width - logoW) / 2;
+                const logoY = (canvas.height - logoH) / 2;
+
+                ctx.save();
+                
+                ctx.globalAlpha = this._overlayAlpha * this._logoAlpha;
+                ctx.drawImage(this._logoImg, logoX, logoY, logoW, logoH);
+                ctx.restore();
+            }
+
+            ctx.restore();
+
+            const elapsed = t - this._startedAt;
+            const minTimeMet = elapsed >= this._minDurationMs;
+            const assetsDone = !!this._isDone();
+            const animDone = this._animation_finished;
+
+            if (!this._fadingOut && minTimeMet && animDone && assetsDone) {
+                this._fadingOut = true;
+
+                gsap.to(this, {
+                    _overlayAlpha: 0,
+                    duration: 2, 
+                    ease: 'power1.out',
+                    onComplete: () => this.stop()
+                });
+            }
+
+            this._raf = requestAnimationFrame(tick);
+        };
+
+        this._raf = requestAnimationFrame(tick);
+    }
+
+    
+    setUnderlayFromCanvas(sourceCanvas) {
+        if (!sourceCanvas) return;
+
+        const c = document.createElement('canvas');
+        c.width = sourceCanvas.width;
+        c.height = sourceCanvas.height;
+
+        const cctx = c.getContext('2d');
+        cctx.drawImage(sourceCanvas, 0, 0);
+
+        this._underlayCanvas = c;
+    }
+
+    stop(silent = false) {
+        if (!this.isActive && !silent) return;
+
+        this.isActive = false;
+
+        if (this._raf) cancelAnimationFrame(this._raf);
+        this._raf = null;
+
+        if (this._tl) {
+            this._tl.kill();
+            this._tl = null;
+        }
+
+        this._roses = [];
+        this._isDone = null;
+        this._fadingOut = false;
+        this._animation_finished = false;
+
+        this._overlayAlpha = 1;
+        this._logoAlpha = 0;
+        this._textAlpha = 0;
+        this._message = '';
+        this._frameImg = null; 
+    }
+}
+
+
