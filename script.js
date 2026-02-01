@@ -869,26 +869,15 @@ class NovelScene {
     startStrobeEffect(ctx, canvas, scene) {
         let strobeState = true;
         const strobeInterval = setInterval(() => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if (strobeState) {
-
-                const bgWidth = canvas.width;
-                const bgHeight = canvas.height;
-                ctx.drawImage(this.bg, 0, 0, bgWidth, bgHeight);
-
-
-                scene.characters.forEach((character, index) => {
-                    const charWidth = canvas.width * 0.3;
-                    const charHeight = character.height * (charWidth / character.width);
-                    const charX = (canvas.width - charWidth) / 2;
-                    const charY = canvas.height * 0.5 - charHeight / 2;
-                    ctx.drawImage(character, charX, charY, charWidth, charHeight);
-                });
-            }
+            
+            ctx.save();
+            ctx.fillStyle = 'white';
+            ctx.globalAlpha = strobeState ? 0.95 : 0;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
 
             strobeState = !strobeState;
-        }, 200);
+        }, 100);
 
         setTimeout(() => {
             clearInterval(strobeInterval);
