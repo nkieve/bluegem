@@ -1,3 +1,75 @@
+// Global Asset Manager for preloading and caching
+class AssetManager {
+    constructor() {
+        this.imageCache = new Map();
+        this.audioCache = new Map();
+        this.audioBuffers = new Map();
+    }
+
+    loadImage(src) {
+        if (this.imageCache.has(src)) {
+            return Promise.resolve(this.imageCache.get(src));
+        }
+
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                this.imageCache.set(src, img);
+                resolve(img);
+            };
+            img.onerror = () => reject(`Failed to load: ${src}`);
+            img.src = src;
+        });
+    }
+
+    getImage(src) {
+        return this.imageCache.get(src);
+    }
+
+    loadAudio(src) {
+        if (this.audioCache.has(src)) {
+            return Promise.resolve(this.audioCache.get(src));
+        }
+
+        return new Promise((resolve) => {
+            const audio = new Audio();
+            audio.preload = 'auto';
+            audio.addEventListener('canplaythrough', () => {
+                this.audioCache.set(src, audio);
+                resolve(audio);
+            }, { once: true });
+            audio.src = src;
+        });
+    }
+
+    getAudio(src) {
+        const cached = this.audioCache.get(src);
+        if (cached) {
+            // Clone for independent playback
+            const clone = cached.cloneNode();
+            clone.volume = cached.volume;
+            return clone;
+        }
+        return null;
+    }
+
+    async preloadAll(assets) {
+        const imagePromises = (assets.images || []).map(src => this.loadImage(src));
+        const audioPromises = (assets.audio || []).map(src => this.loadAudio(src));
+        
+        await Promise.all([...imagePromises, ...audioPromises]);
+    }
+
+    clearCache() {
+        this.imageCache.clear();
+        this.audioCache.clear();
+        this.audioBuffers.clear();
+    }
+}
+
+// Global singleton instance
+const assetManager = new AssetManager();
+
 class TitleScreen {
     constructor() {
         this.assetsLoaded = 0;
@@ -20,10 +92,17 @@ class TitleScreen {
     }
 
     loadImage(src) {
+        const cached = assetManager.getImage(src);
+        if (cached) {
+            this.assetsLoaded++;
+            return cached;
+        }
+        
         const img = new Image();
         img.src = src;
         img.onload = () => {
             this.assetsLoaded++;
+            assetManager.imageCache.set(src, img);
         };
         img.onerror = () => console.error(`Failed to load image: ${src}`);
         return img;
@@ -107,7 +186,7 @@ class TitleScreen {
         if (!this.cachedBackground) {
             if (this.assets.frame.complete && this.assets.frame.naturalWidth !== 0 &&
                 this.assets.logo.complete && this.assets.logo.naturalWidth !== 0) {
-                
+
                 this.cachedBackground = document.createElement('canvas');
                 this.cachedBackground.width = canvas.width;
                 this.cachedBackground.height = canvas.height;
@@ -119,12 +198,12 @@ class TitleScreen {
         }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         if (this.cachedBackground) {
             ctx.drawImage(this.cachedBackground, 0, 0);
         } else {
-             this.drawImage(ctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
-             this.drawImage(ctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
+            this.drawImage(ctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
+            this.drawImage(ctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
         }
 
         const scaleFactor = 0.8;
@@ -205,7 +284,7 @@ class NovelScene {
             emblem: false
         };
 
-        
+
         this.loadingAfterSceneIds = new Set([6, 7, 8, 11, 22]);
         this.loadingOverlay = new LoadingOverlay();
 
@@ -218,11 +297,14 @@ class NovelScene {
     }
 
     async loadScene(ctx, canvas) {
-        
+
         try {
             const response = await fetch('text.json');
             const data = await response.json();
             this.scenes = data.scenes;
+            
+            // Preload all unique assets from all scenes
+            await this.preloadAllSceneAssets();
         } catch (error) {
             console.error('Failed to load text JSON:', error);
             return;
@@ -233,10 +315,10 @@ class NovelScene {
 
 
         canvas.addEventListener('click', () => {
-            
+
             if (this.loadingOverlay?.isActive) return;
 
-            
+
             if (this.autoMode) {
                 this.disableAuto();
                 return;
@@ -246,6 +328,31 @@ class NovelScene {
         });
 
         this.addReturnToTitleButton(canvas, ctx);
+    }
+
+    async preloadAllSceneAssets() {
+        const uniqueImages = new Set([this.FRAME_SRC, this.EMBLEM_SRC]);
+        const uniqueAudio = new Set();
+
+        this.scenes.forEach(scene => {
+            if (scene.bg) uniqueImages.add(scene.bg);
+            if (scene.textbox) uniqueImages.add(scene.textbox);
+            if (scene.characters) {
+                scene.characters.forEach(char => uniqueImages.add(char));
+            }
+            if (scene.audio) {
+                scene.audio.forEach(audio => uniqueAudio.add(audio));
+            }
+        });
+
+        console.log(`Preloading ${uniqueImages.size} images and ${uniqueAudio.size} audio files...`);
+        
+        await assetManager.preloadAll({
+            images: Array.from(uniqueImages),
+            audio: Array.from(uniqueAudio)
+        });
+        
+        console.log('All assets preloaded!');
     }
 
     addReturnToTitleButton(canvas, ctx) {
@@ -281,7 +388,7 @@ class NovelScene {
         volUpButton.innerText = '>> Vol + <<';
         volUpButton.style.position = 'absolute';
         volUpButton.style.top = `calc(${canvas.getBoundingClientRect().bottom}px + 10%)`;
-        volUpButton.style.left = 'calc(70% - 9%)'; 
+        volUpButton.style.left = 'calc(70% - 9%)';
         volUpButton.style.transform = 'translateX(-50%)';
         volUpButton.style.fontFamily = 'Arial, sans-serif';
         volUpButton.style.fontSize = '18px';
@@ -305,7 +412,7 @@ class NovelScene {
         volDownButton.style.textShadow = '1px 1px 2px black';
 
 
-        
+
         const autoButton = document.createElement('div');
         autoButton.innerText = 'AUTO';
         autoButton.style.position = 'fixed';
@@ -328,16 +435,16 @@ class NovelScene {
         autoButton.style.userSelect = 'none';
 
         const syncAutoButtonStyle = () => {
-            
+
             autoButton.innerText = 'AUTO';
 
             if (this.autoMode) {
-                
+
                 autoButton.style.border = '1px solid #2b78ff';
                 autoButton.style.boxShadow = '0 0 10px rgba(43, 120, 255, 0.95)';
                 autoButton.style.background = '#cfcfcf';
             } else {
-                
+
                 autoButton.style.border = '1px solid #9a9a9a';
                 autoButton.style.boxShadow = 'none';
                 autoButton.style.background = '#d0d0d0';
@@ -354,7 +461,7 @@ class NovelScene {
             syncAutoButtonStyle();
         });
 
-        
+
         autoButton.addEventListener('mouseenter', () => {
             autoButton.style.filter = 'brightness(0.95)';
         });
@@ -362,7 +469,7 @@ class NovelScene {
             autoButton.style.filter = 'none';
         });
 
-        
+
         [returnButton, muteButton, volUpButton, volDownButton].forEach((button) => {
             button.addEventListener('mouseenter', () => {
                 button.style.textDecoration = 'underline';
@@ -373,7 +480,7 @@ class NovelScene {
         });
 
         returnButton.addEventListener('click', () => {
-            
+
             this.disableAuto();
 
             console.log('Return to Title Screen button clicked');
@@ -493,20 +600,20 @@ class NovelScene {
 
         const cacheKey = `${this.currentSceneIndex}-${this.currentLineIndex}`;
         if (this.lastTextCacheKey !== cacheKey) {
-             this.cachedWrappedLines = this.calculateWrappedLines(ctx, currentText, maxWidth);
-             this.lastTextCacheKey = cacheKey;
+            this.cachedWrappedLines = this.calculateWrappedLines(ctx, currentText, maxWidth);
+            this.lastTextCacheKey = cacheKey;
         }
 
         let yOffset = 0;
         const lineHeight = 24;
         this.cachedWrappedLines.forEach(line => {
-             ctx.fillText(line, textX, textY + yOffset);
-             yOffset += lineHeight;
+            ctx.fillText(line, textX, textY + yOffset);
+            yOffset += lineHeight;
         });
 
         ctx.restore?.();
 
-        
+
         this._scheduleAutoStep();
     }
 
@@ -531,56 +638,10 @@ class NovelScene {
         return lines;
     }
 
-    advanceSceneOrText(ctx, canvas) {
-        const currentScene = this.scenes[this.currentSceneIndex];
-
-        this.currentLineIndex++;
-        if (this.currentLineIndex >= currentScene.lines.length) {
-            this.currentSceneIndex++;
-
-            if (currentScene.id === 21) {
-                
-                this.disableAuto();
-
-                if (this.audio.length > 0) {
-                    this.audio.forEach((audio) => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    });
-                }
-
-                this.sceneLoaded = false;
-                const creditsScene = new CreditsScene();
-                creditsScene.start(ctx, canvas);
-                return;
-            }
-
-            if (this.currentSceneIndex >= this.scenes.length) {
-                this.currentSceneIndex = 0;
-            }
-
-            const shouldShowLoading = this.loadingAfterSceneIds.has(currentScene.id);
-            this.sceneLoaded = false;
-
-            if (shouldShowLoading) {
-                this.loadingOverlay.start(ctx, canvas, {
-                    message: '',
-                    isDone: () => this.sceneLoaded === true,
-                    minDurationMs: 2000,
-                    frameImg: this.frame
-                });
-            }
-
-            this.loadCurrentScene(ctx, canvas);
-        } else {
-            this.drawScene(ctx, canvas);
-        }
-    }
-
     loadCurrentScene(ctx, canvas) {
         const currentScene = this.scenes[this.currentSceneIndex];
 
-        
+
         if (this.audio.length > 0) {
             this.audio.forEach((audio) => {
                 audio.pause();
@@ -588,16 +649,16 @@ class NovelScene {
             });
         }
 
-        
+
         const sceneAudio = currentScene.audio || [];
 
         this.audio = sceneAudio.map((src) => {
-            const audio = new Audio(src);
-            audio.loop = src.includes('breeze') || src.includes('background'); 
+            const audio = assetManager.getAudio(src) || new Audio(src);
+            audio.loop = src.includes('breeze') || src.includes('background');
             return audio;
         });
 
-        
+
         if (this.audio.length > 0) {
             this.currentAudio = this.audio[0];
             this.audio.forEach((audio) => {
@@ -607,13 +668,26 @@ class NovelScene {
         }
 
 
-        this.bg.src = currentScene.bg || "";
-        this.characters = (currentScene.characters || []).map((src) => {
+        // Use cached images or load new ones
+        this.bg = assetManager.getImage(currentScene.bg) || (() => {
             const img = new Image();
-            img.src = src;
+            img.src = currentScene.bg || "";
             return img;
+        })();
+        
+        this.characters = (currentScene.characters || []).map((src) => {
+            return assetManager.getImage(src) || (() => {
+                const img = new Image();
+                img.src = src;
+                return img;
+            })();
         });
-        this.textBox.src = currentScene.textbox || "";
+        
+        this.textBox = assetManager.getImage(currentScene.textbox) || (() => {
+            const img = new Image();
+            img.src = currentScene.textbox || "";
+            return img;
+        })();
 
         this.currentLineIndex = 0;
         this.audioPlayed = new Array(this.audio.length).fill(false);
@@ -698,12 +772,12 @@ class NovelScene {
         this.characters.forEach((character, index) => {
             const isScene3 = this.scenes[this.currentSceneIndex]?.id === 3;
             const isLyraCG5 = character.src.includes("lyra_cg5.png");
-            const scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7 : 1; 
+            const scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7 : 1;
 
             const characterWidth = innerFrameWidth * 0.38 * scaleFactor;
             const characterHeight = character.height * (characterWidth / character.width);
             const characterX = isScene3
-                ? innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5) - innerFrameWidth * 0.1 
+                ? innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5) - innerFrameWidth * 0.1
                 : innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5);
             const characterY = innerFrameY + (innerFrameHeight - characterHeight) / 1.2;
 
@@ -744,72 +818,6 @@ class NovelScene {
 
 
         this.drawText(ctx, canvas);
-    }
-
-    drawText(ctx, canvas) {
-        const textBoxWidth = canvas.width * 0.8;
-        const textBoxHeight = this.textBox.height * (textBoxWidth / this.textBox.width);
-        const textBoxX = (canvas.width - textBoxWidth) / 2;
-        const textBoxY = canvas.height - textBoxHeight - 20;
-
-        ctx.font = '20px "MS Gothic"';
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-
-        const padding = 20;
-        const textX = textBoxX + padding + textBoxWidth * 0.1;
-        const textY = textBoxY + padding;
-        const maxWidth = textBoxWidth - 2 * padding;
-
-
-        ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
-
-        const currentScene = this.scenes[this.currentSceneIndex];
-        const currentText = currentScene.lines[this.currentLineIndex];
-
-        const cacheKey = `${this.currentSceneIndex}-${this.currentLineIndex}`;
-        if (this.lastTextCacheKey !== cacheKey) {
-             this.cachedWrappedLines = this.calculateWrappedLines(ctx, currentText, maxWidth);
-             this.lastTextCacheKey = cacheKey;
-        }
-
-        let yOffset = 0;
-        const lineHeight = 24;
-        this.cachedWrappedLines.forEach(line => {
-             ctx.fillText(line, textX, textY + yOffset);
-             yOffset += lineHeight;
-        });
-
-        ctx.restore?.(); 
-
-        
-        this._scheduleAutoStep();
-    }
-
-    calculateWrappedLines(ctx, text, maxWidth) {
-        const words = text.split(' ');
-        let line = '';
-        const lines = [];
-
-        for (let i = 0; i < words.length; i++) {
-            const testLine = line + words[i] + ' ';
-            const metrics = ctx.measureText(testLine);
-            const testWidth = metrics.width;
-
-            if (testWidth > maxWidth && i > 0) {
-                lines.push(line);
-                line = words[i] + ' ';
-            } else {
-                line = testLine;
-            }
-        }
-        lines.push(line);
-        return lines;
     }
 
     advanceSceneOrText(ctx, canvas) {
@@ -907,7 +915,7 @@ class NovelScene {
 
 class TransitionScene {
     constructor() {
-        this.duration = 800; 
+        this.duration = 800;
         this.startTime = null;
         this.isActive = false;
         this.type = 'fade';
@@ -933,7 +941,7 @@ class TransitionScene {
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        
+
         if (progress < 0.5) {
             const alpha = progress * 2;
             ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
@@ -1003,7 +1011,7 @@ class CreditsScene {
                     this.invertedFrameCanvas.width = canvas.width;
                     this.invertedFrameCanvas.height = canvas.height;
                     const ictx = this.invertedFrameCanvas.getContext('2d');
-                    
+
                     ictx.save();
                     ictx.filter = 'invert(1)';
                     ictx.drawImage(this.frame, 0, 0, canvas.width, canvas.height);
@@ -1055,19 +1063,19 @@ class LoadingOverlay {
         this._isDone = null;
         this._message = '';
 
-        
+
         this._overlayAlpha = 1;
         this._logoAlpha = 0;
         this._textAlpha = 0;
 
-        
+
         this._roseImg = new Image();
         this._roseImg.src = 'public/rose_anim.svg';
 
         this._logoImg = new Image();
         this._logoImg.src = 'public/logo.svg';
 
-        
+
         this._roses = [];
         this._tl = null;
         this._fadingOut = false;
@@ -1079,7 +1087,7 @@ class LoadingOverlay {
 
         this.isActive = true;
 
-        
+
         this._underlayCanvas = null;
 
         this._startedAt = performance.now();
@@ -1093,7 +1101,7 @@ class LoadingOverlay {
         this._fadingOut = false;
         this._animation_finished = false;
 
-        
+
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
@@ -1114,7 +1122,7 @@ class LoadingOverlay {
             };
         });
 
-        
+
         this._tl = gsap.timeline({
             defaults: { ease: 'none' },
             onComplete: () => {
@@ -1122,19 +1130,19 @@ class LoadingOverlay {
             }
         });
 
-        
+
         this._roses.forEach((r) => {
             this._tl.to(r, { x: r.tx, y: r.ty, rot: r.rot + r.trot, duration: 2 }, 0);
             this._tl.to(r, { a: 0, duration: 2 }, 0);
         });
 
-        
+
         this._tl.to(this, { _logoAlpha: 1, duration: 0.7, ease: 'power1.out' }, 0.25);
 
         const tick = (t) => {
             if (!this.isActive) return;
 
-            
+
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.globalAlpha = 1;
             ctx.globalCompositeOperation = 'source-over';
@@ -1144,16 +1152,16 @@ class LoadingOverlay {
                 ctx.drawImage(this._underlayCanvas, 0, 0, canvas.width, canvas.height);
             }
 
-            
+
             ctx.save();
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.globalAlpha = this._overlayAlpha;
 
-            
+
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            
+
             const cx = canvas.width / 2;
             const cy = canvas.height / 2;
             const r1 = Math.max(canvas.width, canvas.height) * 0.7;
@@ -1186,7 +1194,7 @@ class LoadingOverlay {
                 const logoY = (canvas.height - logoH) / 2;
 
                 ctx.save();
-                
+
                 ctx.globalAlpha = this._overlayAlpha * this._logoAlpha;
                 ctx.drawImage(this._logoImg, logoX, logoY, logoW, logoH);
                 ctx.restore();
@@ -1204,7 +1212,7 @@ class LoadingOverlay {
 
                 gsap.to(this, {
                     _overlayAlpha: 0,
-                    duration: 2, 
+                    duration: 2,
                     ease: 'power1.out',
                     onComplete: () => this.stop()
                 });
@@ -1216,7 +1224,7 @@ class LoadingOverlay {
         this._raf = requestAnimationFrame(tick);
     }
 
-    
+
     setUnderlayFromCanvas(sourceCanvas) {
         if (!sourceCanvas) return;
 
@@ -1252,7 +1260,7 @@ class LoadingOverlay {
         this._logoAlpha = 0;
         this._textAlpha = 0;
         this._message = '';
-        this._frameImg = null; 
+        this._frameImg = null;
     }
 }
 
