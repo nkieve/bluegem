@@ -1,0 +1,12 @@
+[build]
+  # No base directory needed - files are in root
+  base = "."
+  publish = "."
+  
+  # No build command needed for static HTML
+  command = ""
+
+[[redirects]]
+  from = "/*"
+  to = "/blugem.html"
+  status = 200
