@@ -31,28 +31,13 @@ class AssetManager {
             return Promise.resolve(this.audioCache.get(src));
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const audio = new Audio();
             audio.preload = 'auto';
-            
-            const timeout = setTimeout(() => {
-                console.warn(`Audio loading timeout: ${src}`);
-                this.audioCache.set(src, audio);
-                resolve(audio);
-            }, 10000);
-            
             audio.addEventListener('canplaythrough', () => {
-                clearTimeout(timeout);
                 this.audioCache.set(src, audio);
                 resolve(audio);
             }, { once: true });
-            
-            audio.addEventListener('error', (e) => {
-                clearTimeout(timeout);
-                console.error(`Failed to load audio: ${src}`, e);
-                resolve(audio); // Resolve anyway to not block
-            }, { once: true });
-            
             audio.src = src;
         });
     }
@@ -69,24 +54,11 @@ class AssetManager {
     }
 
     async preloadAll(assets) {
-        const imagePromises = (assets.images || []).map(src => 
-            this.loadImage(src).catch(err => {
-                console.warn('Image load failed:', src, err);
-                return null;
-            })
-        );
-        const audioPromises = (assets.audio || []).map(src => 
-            this.loadAudio(src).catch(err => {
-                console.warn('Audio load failed:', src, err);
-                return null;
-            })
-        );
+        const imagePromises = (assets.images || []).map(src => this.loadImage(src));
+        const audioPromises = (assets.audio || []).map(src => this.loadAudio(src));
         
-        try {
-            await Promise.allSettled([...imagePromises, ...audioPromises]);
-        } catch (error) {
-            console.warn('Some assets failed to preload:', error);
-        }
+        await Promise.all([...imagePromises, ...audioPromises]);
+    }
 
     clearCache() {
         this.imageCache.clear();
@@ -125,7 +97,7 @@ class TitleScreen {
             this.assetsLoaded++;
             return cached;
         }
-
+        
         const img = new Image();
         img.src = src;
         img.onload = () => {
@@ -330,7 +302,7 @@ class NovelScene {
             const response = await fetch('text.json');
             const data = await response.json();
             this.scenes = data.scenes;
-
+            
             // Preload all unique assets from all scenes
             await this.preloadAllSceneAssets();
         } catch (error) {
@@ -374,12 +346,12 @@ class NovelScene {
         });
 
         console.log(`Preloading ${uniqueImages.size} images and ${uniqueAudio.size} audio files...`);
-
+        
         await assetManager.preloadAll({
             images: Array.from(uniqueImages),
             audio: Array.from(uniqueAudio)
         });
-
+        
         console.log('All assets preloaded!');
     }
 
@@ -702,7 +674,7 @@ class NovelScene {
             img.src = currentScene.bg || "";
             return img;
         })();
-
+        
         this.characters = (currentScene.characters || []).map((src) => {
             return assetManager.getImage(src) || (() => {
                 const img = new Image();
@@ -710,7 +682,7 @@ class NovelScene {
                 return img;
             })();
         });
-
+        
         this.textBox = assetManager.getImage(currentScene.textbox) || (() => {
             const img = new Image();
             img.src = currentScene.textbox || "";
