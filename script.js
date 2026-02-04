@@ -1,24 +1,66 @@
-// Global Asset Manager for preloading and caching
+
 class AssetManager {
     constructor() {
         this.imageCache = new Map();
         this.audioCache = new Map();
         this.audioBuffers = new Map();
+        this.cacheName = 'bluegem-assets-v1'; 
     }
 
-    loadImage(src) {
+    async loadImage(src) {
+        
         if (this.imageCache.has(src)) {
-            return Promise.resolve(this.imageCache.get(src));
+            return this.imageCache.get(src);
         }
 
+        try {
+        
+            const cache = await caches.open(this.cacheName);
+            const cachedResponse = await cache.match(src);
+            
+            if (cachedResponse) {
+                const blob = await cachedResponse.blob();
+                return await this.createImageFromBlob(blob, src);
+            }
+
+            
+            const response = await fetch(src);
+            if (!response.ok) throw new Error(`Failed to load: ${src}`);
+            
+            
+            await cache.put(src, response.clone());
+            const blob = await response.blob();
+            return await this.createImageFromBlob(blob, src);
+        } catch (error) {
+            console.error(`Error loading image ${src}:`, error);
+            
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    this.imageCache.set(src, img);
+                    resolve(img);
+                };
+                img.onerror = () => reject(`Failed to load: ${src}`);
+                img.src = src;
+            });
+        }
+    }
+
+    async createImageFromBlob(blob, src) {
         return new Promise((resolve, reject) => {
             const img = new Image();
+            const objectURL = URL.createObjectURL(blob);
+            
             img.onload = () => {
                 this.imageCache.set(src, img);
+                URL.revokeObjectURL(objectURL); 
                 resolve(img);
             };
-            img.onerror = () => reject(`Failed to load: ${src}`);
-            img.src = src;
+            img.onerror = () => {
+                URL.revokeObjectURL(objectURL);
+                reject(`Failed to create image from blob: ${src}`);
+            };
+            img.src = objectURL;
         });
     }
 
@@ -26,26 +68,63 @@ class AssetManager {
         return this.imageCache.get(src);
     }
 
-    loadAudio(src) {
+    async loadAudio(src) {
+        
         if (this.audioCache.has(src)) {
-            return Promise.resolve(this.audioCache.get(src));
+            return this.audioCache.get(src);
         }
 
+        try {
+            
+            const cache = await caches.open(this.cacheName);
+            const cachedResponse = await cache.match(src);
+            
+            let audioBlob;
+            if (cachedResponse) {
+                audioBlob = await cachedResponse.blob();
+            } else {
+                
+                const response = await fetch(src);
+                if (!response.ok) throw new Error(`Failed to load audio: ${src}`);
+                
+                await cache.put(src, response.clone());
+                audioBlob = await response.blob();
+            }
+
+            return await this.createAudioFromBlob(audioBlob, src);
+        } catch (error) {
+            console.error(`Error loading audio ${src}:`, error);
+            
+            return new Promise((resolve) => {
+                const audio = new Audio();
+                audio.preload = 'auto';
+                audio.addEventListener('canplaythrough', () => {
+                    this.audioCache.set(src, audio);
+                    resolve(audio);
+                }, { once: true });
+                audio.src = src;
+            });
+        }
+    }
+
+    async createAudioFromBlob(blob, src) {
+        const objectURL = URL.createObjectURL(blob);
+        const audio = new Audio();
+        audio.preload = 'auto';
+        audio.src = objectURL;
+        
         return new Promise((resolve) => {
-            const audio = new Audio();
-            audio.preload = 'auto';
             audio.addEventListener('canplaythrough', () => {
                 this.audioCache.set(src, audio);
                 resolve(audio);
             }, { once: true });
-            audio.src = src;
         });
     }
 
     getAudio(src) {
         const cached = this.audioCache.get(src);
         if (cached) {
-            // Clone for independent playback
+            
             const clone = cached.cloneNode();
             clone.volume = cached.volume;
             return clone;
@@ -60,14 +139,22 @@ class AssetManager {
         await Promise.all([...imagePromises, ...audioPromises]);
     }
 
-    clearCache() {
+    async clearCache() {
         this.imageCache.clear();
         this.audioCache.clear();
         this.audioBuffers.clear();
+        
+        
+        try {
+            await caches.delete(this.cacheName);
+            console.log('Persistent cache cleared');
+        } catch (error) {
+            console.error('Error clearing cache:', error);
+        }
     }
 }
 
-// Global singleton instance
+
 const assetManager = new AssetManager();
 
 class TitleScreen {

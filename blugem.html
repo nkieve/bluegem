@@ -14,7 +14,7 @@
         style="border:1px solid #000; display:block;margin: 90px auto;"></canvas>
 
     <script>
-        // Suppress Chrome extension errors that don't affect the app
+        
         window.addEventListener('error', (e) => {
             if (e.message && e.message.includes('message port closed')) {
                 e.preventDefault();
@@ -22,7 +22,7 @@
             }
         });
         
-        // Suppress unhandled promise rejections from extensions
+        
         window.addEventListener('unhandledrejection', (e) => {
             if (e.reason && e.reason.message && e.reason.message.includes('message port closed')) {
                 e.preventDefault();
@@ -55,7 +55,7 @@
             };
 
             const animateRoses = () => {
-                if (!canvas.isConnected) return; // Stop animation if canvas is removed
+                if (!canvas.isConnected) return; 
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -93,7 +93,7 @@
                         ctx.drawImage(roseImage, rose.x, rose.y, 100, 100);
                     });
 
-                    // Draw glowing roses
+                    
                     ctx.shadowColor = 'blue';
                     ctx.shadowBlur = 20;
                     glowingRoses.forEach(rose => {
