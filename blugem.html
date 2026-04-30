@@ -67,6 +67,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('myCanvas');
             const ctx = canvas.getContext('2d');
+            let titleScreen = null;
 
             const fitCanvasToViewport = () => {
                 const isMobile = window.matchMedia('(max-width: 700px)').matches;
@@ -83,9 +84,8 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const titleScreen = new TitleScreen();
+            titleScreen = new TitleScreen();
 
-            const vortexCenter = { x: canvas.width / 2, y: canvas.height / 2 };
             const roses = [];
             const roseImage = new Image();
             roseImage.src = 'public/rose_anim.svg';
@@ -105,6 +105,7 @@
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+                const vortexCenter = { x: canvas.width / 2, y: canvas.height / 2 };
 
                 titleScreen.draw(ctx, canvas);
 
@@ -153,6 +154,22 @@
 
                 requestAnimationFrame(animateRoses);
             };
+
+            window.addEventListener('resize', () => {
+                fitCanvasToViewport();
+                if (titleScreen) {
+                    titleScreen.draw(ctx, canvas);
+                }
+            });
+
+            window.addEventListener('orientationchange', () => {
+                window.setTimeout(() => {
+                    fitCanvasToViewport();
+                    if (titleScreen) {
+                        titleScreen.draw(ctx, canvas);
+                    }
+                }, 100);
+            });
 
             const checkAssetsLoaded = () => {
                 if (titleScreen.assetsLoaded === titleScreen.totalAssets) {
