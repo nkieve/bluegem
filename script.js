@@ -282,7 +282,7 @@ class TitleScreen {
 
     draw(ctx, canvas) {
         const titleScale = this.getTitleScale(canvas);
-        const logoScale = 2.4 * titleScale;
+        const logoScale = 1.2 * titleScale;
         const buttonScale = 0.8 * titleScale;
         const buttonGap = 20 * titleScale;
         const buttonYOffset = 120 * titleScale;
