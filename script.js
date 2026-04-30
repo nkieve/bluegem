@@ -705,7 +705,7 @@ class NovelScene {
 
     drawText(ctx, canvas) {
         const isMobile = window.matchMedia('(max-width: 700px)').matches;
-        const textBoxWidth = canvas.width * 0.8;
+        const textBoxWidth = canvas.width * (isMobile ? 0.72 : 0.8);
         const textBoxHeight = this.textBox.height * (textBoxWidth / this.textBox.width);
         const textBoxX = (canvas.width - textBoxWidth) / 2;
         const textBoxY = canvas.height - textBoxHeight - 20;
@@ -918,13 +918,13 @@ class NovelScene {
             const characterX = isScene3
                 ? innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5) - innerFrameWidth * 0.1
                 : innerFrameX + (innerFrameWidth - characterWidth) / (1.5 + index * 0.5);
-            const characterY = innerFrameY + (innerFrameHeight - characterHeight) / 1.2;
+            const characterY = innerFrameY + (innerFrameHeight - characterHeight) / 1.2 + (isMobile ? innerFrameHeight * 0.05 : 0);
 
             ctx.drawImage(character, characterX, characterY, characterWidth, characterHeight);
         });
 
 
-        const textBoxWidth = innerFrameWidth * 0.8;
+        const textBoxWidth = innerFrameWidth * (isMobile ? 0.72 : 0.8);
         const textBoxHeight = this.textBox.height * (textBoxWidth / this.textBox.width);
         const textBoxX = innerFrameX + (innerFrameWidth - textBoxWidth) / 2;
         const textBoxY = innerFrameY + innerFrameHeight - textBoxHeight - 70;
