@@ -17,35 +17,39 @@
         body {
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             padding: 16px;
             box-sizing: border-box;
         }
 
+        #canvasStage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         #myCanvas {
             display: block;
-            width: min(100vw - 32px, 1000px);
-            height: auto;
-            max-height: calc(100vh - 32px);
             border: 1px solid #000;
+        }
+
+        #myCanvas.mobile-rotated {
+            transform: rotate(90deg);
+            transform-origin: center center;
         }
 
         @media (max-width: 700px) {
             body {
                 padding: 8px;
-                align-items: stretch;
-            }
-
-            #myCanvas {
-                width: calc(100vw - 16px);
-                max-height: calc(100vh - 16px);
             }
         }
     </style>
 </head>
 
 <body>
-    <canvas id="myCanvas" width="1000" height="800"></canvas>
+    <div id="canvasStage">
+        <canvas id="myCanvas" width="1000" height="800"></canvas>
+    </div>
 
     <script>
         
@@ -66,17 +70,43 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('myCanvas');
+            const canvasStage = document.getElementById('canvasStage');
             const ctx = canvas.getContext('2d');
             let titleScreen = null;
 
             const fitCanvasToViewport = () => {
                 const isMobile = window.matchMedia('(max-width: 700px)').matches;
-                const maxWidth = isMobile ? window.innerWidth - 16 : Math.min(window.innerWidth - 32, 1000);
-                const width = Math.max(320, Math.floor(maxWidth));
-                const height = Math.floor(width * 0.8);
+                const horizontalPadding = isMobile ? 16 : 32;
+                const availableWidth = Math.max(240, window.innerWidth - horizontalPadding);
+                const availableHeight = Math.max(240, window.innerHeight - horizontalPadding);
 
-                canvas.width = width;
-                canvas.height = Math.min(height, Math.floor(window.innerHeight - (isMobile ? 16 : 32)));
+                if (isMobile) {
+                    // Rotate into landscape by swapping logical width/height before applying CSS rotation.
+                    canvas.width = Math.floor(availableHeight);
+                    canvas.height = Math.floor(availableWidth);
+
+                    canvas.style.width = `${canvas.width}px`;
+                    canvas.style.height = `${canvas.height}px`;
+
+                    canvasStage.style.width = `${canvas.height}px`;
+                    canvasStage.style.height = `${canvas.width}px`;
+
+                    canvas.classList.add('mobile-rotated');
+                } else {
+                    const width = Math.max(320, Math.min(Math.floor(availableWidth), 1000));
+                    const height = Math.max(240, Math.min(Math.floor(width * 0.8), Math.floor(availableHeight)));
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    canvas.style.width = `${width}px`;
+                    canvas.style.height = `${height}px`;
+
+                    canvasStage.style.width = `${width}px`;
+                    canvasStage.style.height = `${height}px`;
+
+                    canvas.classList.remove('mobile-rotated');
+                }
             };
 
             fitCanvasToViewport();

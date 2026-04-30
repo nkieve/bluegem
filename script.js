@@ -215,6 +215,26 @@ class TitleScreen {
             .catch(error => console.error('Failed to load audio:', error));
     }
 
+    getPointerPosition(event, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const rawX = event.clientX - rect.left;
+        const rawY = event.clientY - rect.top;
+
+        const isMobileRotated = window.matchMedia('(max-width: 700px)').matches && canvas.classList.contains('mobile-rotated');
+
+        if (isMobileRotated) {
+            return {
+                x: (rawY / rect.height) * canvas.width,
+                y: (1 - (rawX / rect.width)) * canvas.height
+            };
+        }
+
+        return {
+            x: (rawX / rect.width) * canvas.width,
+            y: (rawY / rect.height) * canvas.height
+        };
+    }
+
     setupHoverListeners(canvas, ctx) {
         const titleScale = this.getTitleScale(canvas);
         const buttonScale = 0.8 * titleScale;
@@ -232,9 +252,7 @@ class TitleScreen {
         canvas.addEventListener('keydown', resumeAudioContext);
 
         canvas.addEventListener('mousemove', (event) => {
-            const { left, top } = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - left;
-            const mouseY = event.clientY - top;
+            const { x: mouseX, y: mouseY } = this.getPointerPosition(event, canvas);
 
             const buttonWidth = this.assets.startButton.width * buttonScale;
             const buttonHeight = this.assets.startButton.height * buttonScale;
@@ -247,9 +265,7 @@ class TitleScreen {
         });
 
         canvas.addEventListener('click', (event) => {
-            const { left, top } = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - left;
-            const mouseY = event.clientY - top;
+            const { x: mouseX, y: mouseY } = this.getPointerPosition(event, canvas);
 
             const buttonWidth = this.assets.startButton.width * buttonScale;
             const buttonHeight = this.assets.startButton.height * buttonScale;
@@ -286,7 +302,7 @@ class TitleScreen {
         const logoScale = 2.4 * titleScale * (isMobile ? 0.504 : 1);
         const buttonScale = 0.8 * titleScale * (isMobile ? 1.35 : 1);
         const buttonGap = 20 * titleScale;
-        const buttonYOffset = 120 * titleScale * (isMobile ? 2 : 1);
+        const buttonYOffset = (120 * titleScale * (isMobile ? 2 : 1)) + (isMobile ? 50 : 0);
 
         if (!this.cachedBackground) {
             if (this.assets.frame.complete && this.assets.frame.naturalWidth !== 0 &&
