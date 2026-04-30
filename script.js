@@ -281,8 +281,9 @@ class TitleScreen {
     }
 
     draw(ctx, canvas) {
+        const isMobile = window.matchMedia('(max-width: 700px)').matches;
         const titleScale = this.getTitleScale(canvas);
-        const logoScale = 1.2 * titleScale;
+        const logoScale = 2.4 * titleScale * (isMobile ? 0.8 : 1);
         const buttonScale = 0.8 * titleScale;
         const buttonGap = 20 * titleScale;
         const buttonYOffset = 120 * titleScale;
