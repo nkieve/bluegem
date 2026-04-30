@@ -697,17 +697,21 @@ class NovelScene {
     }
 
     drawText(ctx, canvas) {
+        const isMobile = window.matchMedia('(max-width: 700px)').matches;
         const textBoxWidth = canvas.width * 0.8;
         const textBoxHeight = this.textBox.height * (textBoxWidth / this.textBox.width);
         const textBoxX = (canvas.width - textBoxWidth) / 2;
         const textBoxY = canvas.height - textBoxHeight - 20;
 
-        ctx.font = '20px "MS Gothic"';
+        const fontSize = isMobile ? 14 : 20;
+        const padding = isMobile ? 12 : 20;
+        const lineHeight = isMobile ? 18 : 24;
+        
+        ctx.font = `${fontSize}px "MS Gothic"`;
         ctx.fillStyle = 'white';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
 
-        const padding = 20;
         const textX = textBoxX + padding + textBoxWidth * 0.1;
         const textY = textBoxY + padding;
         const maxWidth = textBoxWidth - 2 * padding;
@@ -729,7 +733,6 @@ class NovelScene {
         }
 
         let yOffset = 0;
-        const lineHeight = 24;
         this.cachedWrappedLines.forEach(line => {
             ctx.fillText(line, textX, textY + yOffset);
             yOffset += lineHeight;
@@ -879,6 +882,7 @@ class NovelScene {
     }
 
     drawScene(ctx, canvas) {
+        const isMobile = window.matchMedia('(max-width: 700px)').matches;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -889,8 +893,9 @@ class NovelScene {
         const innerFrameHeight = canvas.height * 0.9;
 
 
-        const bgWidth = innerFrameWidth * 0.9;
-        const bgHeight = innerFrameHeight * 0.9;
+        const bgScale = isMobile ? 0.75 : 0.9;
+        const bgWidth = innerFrameWidth * bgScale;
+        const bgHeight = innerFrameHeight * bgScale;
         const bgX = innerFrameX + (innerFrameWidth - bgWidth) / 2;
         const bgY = innerFrameY + (innerFrameHeight - bgHeight) / 2;
         ctx.drawImage(this.bg, bgX, bgY, bgWidth, bgHeight);
@@ -898,7 +903,8 @@ class NovelScene {
         this.characters.forEach((character, index) => {
             const isScene3 = this.scenes[this.currentSceneIndex]?.id === 3;
             const isLyraCG5 = character.originalSrc.includes("lyra_cg5.png");
-            const scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7056 : 1;
+            let scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7056 : 1;
+            if (isMobile) scaleFactor *= 0.65;
 
             const characterWidth = innerFrameWidth * 0.38 * scaleFactor;
             const characterHeight = character.height * (characterWidth / character.width);
@@ -931,7 +937,8 @@ class NovelScene {
             ctx.restore();
 
 
-            ctx.font = '16px Arial';
+            const emblemFontSize = isMobile ? 10 : 16;
+            ctx.font = `${emblemFontSize}px Arial`;
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
             ctx.fillText('Go back to Title Screen', emblemX + emblemWidth / 2, emblemY - 10);
