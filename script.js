@@ -407,7 +407,7 @@ class NovelScene {
         this.hoverState = {
             emblem: false
         };
-
+        this.mobileInteractionShown = false;
 
         this.loadingAfterSceneIds = new Set([6, 7, 8, 11, 22]);
         this.loadingOverlay = new LoadingOverlay();
@@ -434,9 +434,16 @@ class NovelScene {
             return;
         }
 
+        const handleMobileInteraction = () => {
+            this.mobileInteractionShown = true;
+            canvas.removeEventListener('click', handleMobileInteraction);
+            canvas.removeEventListener('touchstart', handleMobileInteraction);
+        };
 
         this.loadCurrentScene(ctx, canvas);
 
+        canvas.addEventListener('click', handleMobileInteraction);
+        canvas.addEventListener('touchstart', handleMobileInteraction);
 
         canvas.addEventListener('click', () => {
 
@@ -949,6 +956,20 @@ class NovelScene {
 
         ctx.drawImage(this.frame, 0, 0, canvas.width, canvas.height);
 
+        // Show mobile interaction prompt on novel scene load
+        if (isMobile && !this.mobileInteractionShown) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.font = 'bold 24px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Tap to interact', canvas.width / 2, canvas.height / 2);
+            
+            ctx.restore();
+        }
 
         this.drawText(ctx, canvas);
     }
