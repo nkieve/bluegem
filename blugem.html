@@ -127,6 +127,15 @@
 
             titleScreen = new TitleScreen();
 
+            // Mobile interaction prompt
+            let mobileInteractionShown = false;
+
+            const handleMobileInteraction = () => {
+                mobileInteractionShown = true;
+                canvas.removeEventListener('click', handleMobileInteraction);
+                canvas.removeEventListener('touchstart', handleMobileInteraction);
+            };
+
             const roses = [];
             const roseImage = new Image();
             roseImage.src = 'public/rose_anim.svg';
@@ -198,6 +207,25 @@
 
                 ctx.globalAlpha = 1;
                 ctx.shadowBlur = 0;
+
+                // Show mobile interaction prompt on title screen
+                const isMobile = window.matchMedia('(max-width: 700px)').matches;
+                if (isMobile && !mobileInteractionShown) {
+                    canvas.addEventListener('click', handleMobileInteraction);
+                    canvas.addEventListener('touchstart', handleMobileInteraction);
+
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.font = 'bold 24px Arial';
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('Tap to interact', canvas.width / 2, canvas.height / 2);
+                    
+                    ctx.restore();
+                }
 
                 requestAnimationFrame(animateRoses);
             };

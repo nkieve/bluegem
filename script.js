@@ -703,9 +703,9 @@ class NovelScene {
         const textBoxX = (canvas.width - textBoxWidth) / 2;
         const textBoxY = canvas.height - textBoxHeight - 20;
 
-        const fontSize = isMobile ? 14 : 20;
-        const padding = isMobile ? 12 : 20;
-        const lineHeight = isMobile ? 18 : 24;
+        const fontSize = isMobile ? 17 : 20;
+        const padding = isMobile ? 14 : 20;
+        const lineHeight = isMobile ? 21 : 24;
         
         ctx.font = `${fontSize}px "MS Gothic"`;
         ctx.fillStyle = 'white';
@@ -893,7 +893,7 @@ class NovelScene {
         const innerFrameHeight = canvas.height * 0.9;
 
 
-        const bgScale = isMobile ? 0.75 : 0.9;
+        const bgScale = isMobile ? 0.9 : 0.9;
         const bgWidth = innerFrameWidth * bgScale;
         const bgHeight = innerFrameHeight * bgScale;
         const bgX = innerFrameX + (innerFrameWidth - bgWidth) / 2;
@@ -904,7 +904,7 @@ class NovelScene {
             const isScene3 = this.scenes[this.currentSceneIndex]?.id === 3;
             const isLyraCG5 = character.originalSrc.includes("lyra_cg5.png");
             let scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7056 : 1;
-            if (isMobile) scaleFactor *= 0.65;
+            if (isMobile) scaleFactor *= 0.78;
 
             const characterWidth = innerFrameWidth * 0.38 * scaleFactor;
             const characterHeight = character.height * (characterWidth / character.width);
@@ -937,7 +937,7 @@ class NovelScene {
             ctx.restore();
 
 
-            const emblemFontSize = isMobile ? 10 : 16;
+            const emblemFontSize = isMobile ? 12 : 16;
             ctx.font = `${emblemFontSize}px Arial`;
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
