@@ -157,6 +157,13 @@ class AssetManager {
 
 const assetManager = new AssetManager();
 
+const BASE_CANVAS_WIDTH = 1000;
+const BASE_CANVAS_HEIGHT = 800;
+
+const getCanvasScale = (canvas) => {
+    return Math.min(canvas.width / BASE_CANVAS_WIDTH, canvas.height / BASE_CANVAS_HEIGHT);
+};
+
 class TitleScreen {
     constructor() {
         this.assetsLoaded = 0;
@@ -208,7 +215,8 @@ class TitleScreen {
     }
 
     setupHoverListeners(canvas, ctx) {
-        const scaleFactor = 0.8;
+        const canvasScale = getCanvasScale(canvas);
+        const scaleFactor = 0.8 * canvasScale;
         const resumeAudioContext = () => {
             if (this.audioContext.state === 'suspended') {
                 this.audioContext.resume().catch(error => console.error('Failed to resume audio context:', error));
@@ -227,9 +235,10 @@ class TitleScreen {
 
             const buttonWidth = this.assets.startButton.width * scaleFactor;
             const buttonHeight = this.assets.startButton.height * scaleFactor;
-            const startButtonX = (canvas.width / 2) - buttonWidth - 20;
-            const buttonY = canvas.height / 2 + 120;
-            const configButtonX = (canvas.width / 2) + 20;
+            const buttonGap = 20 * canvasScale;
+            const startButtonX = (canvas.width / 2) - buttonWidth - buttonGap;
+            const buttonY = canvas.height / 2 + 120 * canvasScale;
+            const configButtonX = (canvas.width / 2) + buttonGap;
 
             this.hoverState.startButton = this.isMouseOver(mouseX, mouseY, startButtonX, buttonY, buttonWidth, buttonHeight);
             this.hoverState.configButton = this.isMouseOver(mouseX, mouseY, configButtonX, buttonY, buttonWidth, buttonHeight);
@@ -242,9 +251,10 @@ class TitleScreen {
 
             const buttonWidth = this.assets.startButton.width * scaleFactor;
             const buttonHeight = this.assets.startButton.height * scaleFactor;
-            const startButtonX = (canvas.width / 2) - buttonWidth - 20;
-            const buttonY = canvas.height / 2 + 120;
-            const configButtonX = (canvas.width / 2) + 20;
+            const buttonGap = 20 * canvasScale;
+            const startButtonX = (canvas.width / 2) - buttonWidth - buttonGap;
+            const buttonY = canvas.height / 2 + 120 * canvasScale;
+            const configButtonX = (canvas.width / 2) + buttonGap;
 
             if (this.isMouseOver(mouseX, mouseY, startButtonX, buttonY, buttonWidth, buttonHeight)) {
                 this.stopAudio();
@@ -270,6 +280,8 @@ class TitleScreen {
     }
 
     draw(ctx, canvas) {
+        const canvasScale = getCanvasScale(canvas);
+
         if (!this.cachedBackground) {
             if (this.assets.frame.complete && this.assets.frame.naturalWidth !== 0 &&
                 this.assets.logo.complete && this.assets.logo.naturalWidth !== 0) {
@@ -280,7 +292,7 @@ class TitleScreen {
                 const bctx = this.cachedBackground.getContext('2d');
 
                 this.drawImage(bctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
-                this.drawImage(bctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
+                this.drawImage(bctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4 * canvasScale) / 2, (canvas.height - this.assets.logo.height * 2.4 * canvasScale) / 2 - 90 * canvasScale, this.assets.logo.width * 2.4 * canvasScale, this.assets.logo.height * 2.4 * canvasScale);
             }
         }
 
@@ -290,15 +302,16 @@ class TitleScreen {
             ctx.drawImage(this.cachedBackground, 0, 0);
         } else {
             this.drawImage(ctx, this.assets.frame, 0, 0, canvas.width, canvas.height);
-            this.drawImage(ctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4) / 2, (canvas.height - this.assets.logo.height * 2.4) / 2 - 90, this.assets.logo.width * 2.4, this.assets.logo.height * 2.4);
+            this.drawImage(ctx, this.assets.logo, (canvas.width - this.assets.logo.width * 2.4 * canvasScale) / 2, (canvas.height - this.assets.logo.height * 2.4 * canvasScale) / 2 - 90 * canvasScale, this.assets.logo.width * 2.4 * canvasScale, this.assets.logo.height * 2.4 * canvasScale);
         }
 
-        const scaleFactor = 0.8;
+        const scaleFactor = 0.8 * canvasScale;
         const buttonWidth = this.assets.startButton.width * scaleFactor;
         const buttonHeight = this.assets.startButton.height * scaleFactor;
-        const startButtonX = (canvas.width / 2) - buttonWidth - 20;
-        const buttonY = canvas.height / 2 + 120;
-        const configButtonX = (canvas.width / 2) + 20;
+        const buttonGap = 20 * canvasScale;
+        const startButtonX = (canvas.width / 2) - buttonWidth - buttonGap;
+        const buttonY = canvas.height / 2 + 120 * canvasScale;
+        const configButtonX = (canvas.width / 2) + buttonGap;
 
         this.drawButton(ctx, this.hoverState.startButton ? this.assets.startButtonHover : this.assets.startButton, startButtonX, buttonY, buttonWidth, buttonHeight);
         this.drawButton(ctx, this.hoverState.configButton ? this.assets.configButtonHover : this.assets.configButton, configButtonX, buttonY, buttonWidth, buttonHeight);
@@ -665,7 +678,7 @@ class NovelScene {
         const textBoxX = (canvas.width - textBoxWidth) / 2;
         const textBoxY = canvas.height - textBoxHeight - 20;
 
-        ctx.font = '20px "MS Gothic"';
+        ctx.font = `${20 * getCanvasScale(canvas)}px "MS Gothic"`;
         ctx.fillStyle = 'white';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
@@ -692,7 +705,7 @@ class NovelScene {
         }
 
         let yOffset = 0;
-        const lineHeight = 24;
+        const lineHeight = 24 * getCanvasScale(canvas);
         this.cachedWrappedLines.forEach(line => {
             ctx.fillText(line, textX, textY + yOffset);
             yOffset += lineHeight;
@@ -850,6 +863,7 @@ class NovelScene {
         const innerFrameY = canvas.height * 0.05;
         const innerFrameWidth = canvas.width * 0.9;
         const innerFrameHeight = canvas.height * 0.9;
+        const canvasScale = getCanvasScale(canvas);
 
 
         const bgWidth = innerFrameWidth * 0.9;
@@ -894,7 +908,7 @@ class NovelScene {
             ctx.restore();
 
 
-            ctx.font = '16px Arial';
+            ctx.font = `${16 * canvasScale}px Arial`;
             ctx.fillStyle = 'black';
             ctx.textAlign = 'center';
             ctx.fillText('Go back to Title Screen', emblemX + emblemWidth / 2, emblemY - 10);
@@ -1069,6 +1083,7 @@ class CreditsScene {
     }
 
     start(ctx, canvas) {
+        const canvasScale = getCanvasScale(canvas);
 
         if (this.audio) {
             this.audio.pause();
@@ -1104,7 +1119,7 @@ class CreditsScene {
             const innerFrameWidth = canvas.width * 0.8;
             const innerFrameHeight = canvas.height * 0.8;
 
-            ctx.font = 'bold 24px MS Gothic';
+            ctx.font = `bold ${24 * canvasScale}px MS Gothic`;
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
 
@@ -1161,6 +1176,8 @@ class LoadingOverlay {
     }
 
     start(ctx, canvas, { message = '', isDone, minDurationMs = 2000, frameImg = null } = {}) {
+        const canvasScale = getCanvasScale(canvas);
+
         this.stop(true);
 
         this.isActive = true;
@@ -1252,8 +1269,8 @@ class LoadingOverlay {
 
             if (this._roseImg.complete && this._roseImg.naturalWidth !== 0) {
                 this._roses.forEach((r) => {
-                    const w = 120 * r.s;
-                    const h = 120 * r.s;
+                    const w = 120 * canvasScale * r.s;
+                    const h = 120 * canvasScale * r.s;
                     ctx.save();
                     ctx.globalAlpha = r.a;
                     ctx.translate(r.x, r.y);
@@ -1264,7 +1281,7 @@ class LoadingOverlay {
             }
 
             if (this._logoImg.complete && this._logoImg.naturalWidth !== 0 && this._logoAlpha > 0) {
-                const baseLogoW = Math.min(canvas.width * 0.42, 520);
+                const baseLogoW = Math.min(canvas.width * 0.42, 520 * canvasScale);
                 const logoW = Math.min(baseLogoW * 2, canvas.width * 0.9);
 
                 const logoH = this._logoImg.height * (logoW / this._logoImg.width);
