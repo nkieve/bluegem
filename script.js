@@ -4,36 +4,36 @@ class AssetManager {
         this.imageCache = new Map();
         this.audioCache = new Map();
         this.audioBuffers = new Map();
-        this.cacheName = 'bluegem-assets-v1'; 
+        this.cacheName = 'bluegem-assets-v1';
     }
 
     async loadImage(src) {
-        
+
         if (this.imageCache.has(src)) {
             return this.imageCache.get(src);
         }
 
         try {
-        
+
             const cache = await caches.open(this.cacheName);
             const cachedResponse = await cache.match(src);
-            
+
             if (cachedResponse) {
                 const blob = await cachedResponse.blob();
                 return await this.createImageFromBlob(blob, src);
             }
 
-            
+
             const response = await fetch(src);
             if (!response.ok) throw new Error(`Failed to load: ${src}`);
-            
-            
+
+
             await cache.put(src, response.clone());
             const blob = await response.blob();
             return await this.createImageFromBlob(blob, src);
         } catch (error) {
             console.error(`Error loading image ${src}:`, error);
-            
+
             return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.onload = () => {
@@ -50,10 +50,10 @@ class AssetManager {
         return new Promise((resolve, reject) => {
             const img = new Image();
             const objectURL = URL.createObjectURL(blob);
-            
+
             img.onload = () => {
                 this.imageCache.set(src, img);
-                URL.revokeObjectURL(objectURL); 
+                URL.revokeObjectURL(objectURL);
                 resolve(img);
             };
             img.onerror = () => {
@@ -69,24 +69,24 @@ class AssetManager {
     }
 
     async loadAudio(src) {
-        
+
         if (this.audioCache.has(src)) {
             return this.audioCache.get(src);
         }
 
         try {
-            
+
             const cache = await caches.open(this.cacheName);
             const cachedResponse = await cache.match(src);
-            
+
             let audioBlob;
             if (cachedResponse) {
                 audioBlob = await cachedResponse.blob();
             } else {
-                
+
                 const response = await fetch(src);
                 if (!response.ok) throw new Error(`Failed to load audio: ${src}`);
-                
+
                 await cache.put(src, response.clone());
                 audioBlob = await response.blob();
             }
@@ -94,7 +94,7 @@ class AssetManager {
             return await this.createAudioFromBlob(audioBlob, src);
         } catch (error) {
             console.error(`Error loading audio ${src}:`, error);
-            
+
             return new Promise((resolve) => {
                 const audio = new Audio();
                 audio.preload = 'auto';
@@ -112,7 +112,7 @@ class AssetManager {
         const audio = new Audio();
         audio.preload = 'auto';
         audio.src = objectURL;
-        
+
         return new Promise((resolve) => {
             audio.addEventListener('canplaythrough', () => {
                 this.audioCache.set(src, audio);
@@ -124,7 +124,7 @@ class AssetManager {
     getAudio(src) {
         const cached = this.audioCache.get(src);
         if (cached) {
-            
+
             const clone = cached.cloneNode();
             clone.volume = cached.volume;
             return clone;
@@ -135,7 +135,7 @@ class AssetManager {
     async preloadAll(assets) {
         const imagePromises = (assets.images || []).map(src => this.loadImage(src));
         const audioPromises = (assets.audio || []).map(src => this.loadAudio(src));
-        
+
         await Promise.all([...imagePromises, ...audioPromises]);
     }
 
@@ -143,8 +143,8 @@ class AssetManager {
         this.imageCache.clear();
         this.audioCache.clear();
         this.audioBuffers.clear();
-        
-        
+
+
         try {
             await caches.delete(this.cacheName);
             console.log('Persistent cache cleared');
@@ -184,7 +184,7 @@ class TitleScreen {
             this.assetsLoaded++;
             return cached;
         }
-        
+
         const img = new Image();
         img.src = src;
         img.onload = () => {
@@ -389,7 +389,7 @@ class NovelScene {
             const response = await fetch('text.json');
             const data = await response.json();
             this.scenes = data.scenes;
-            
+
             // Preload all unique assets from all scenes
             await this.preloadAllSceneAssets();
         } catch (error) {
@@ -433,12 +433,12 @@ class NovelScene {
         });
 
         console.log(`Preloading ${uniqueImages.size} images and ${uniqueAudio.size} audio files...`);
-        
+
         await assetManager.preloadAll({
             images: Array.from(uniqueImages),
             audio: Array.from(uniqueAudio)
         });
-        
+
         console.log('All assets preloaded!');
     }
 
@@ -761,15 +761,17 @@ class NovelScene {
             img.src = currentScene.bg || "";
             return img;
         })();
-        
+
         this.characters = (currentScene.characters || []).map((src) => {
-            return assetManager.getImage(src) || (() => {
-                const img = new Image();
-                img.src = src;
-                return img;
+            const img = assetManager.getImage(src) || (() => {
+                const newImg = new Image();
+                newImg.src = src;
+                return newImg;
             })();
+            img.originalSrc = src;
+            return img;
         });
-        
+
         this.textBox = assetManager.getImage(currentScene.textbox) || (() => {
             const img = new Image();
             img.src = currentScene.textbox || "";
@@ -858,8 +860,8 @@ class NovelScene {
 
         this.characters.forEach((character, index) => {
             const isScene3 = this.scenes[this.currentSceneIndex]?.id === 3;
-            const isLyraCG5 = character.src.includes("lyra_cg5.png");
-            const scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7 : 1;
+            const isLyraCG5 = character.originalSrc.includes("lyra_cg5.png");
+            const scaleFactor = isScene3 ? 1.4 : isLyraCG5 ? 0.7056 : 1;
 
             const characterWidth = innerFrameWidth * 0.38 * scaleFactor;
             const characterHeight = character.height * (characterWidth / character.width);
@@ -956,7 +958,7 @@ class NovelScene {
     startStrobeEffect(ctx, canvas, scene) {
         let strobeState = true;
         const strobeInterval = setInterval(() => {
-            
+
             ctx.save();
             ctx.fillStyle = 'white';
             ctx.globalAlpha = strobeState ? 0.95 : 0;
