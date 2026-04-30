@@ -705,21 +705,22 @@ class NovelScene {
 
     drawText(ctx, canvas) {
         const isMobile = window.matchMedia('(max-width: 700px)').matches;
-        const textBoxWidth = canvas.width * (isMobile ? 0.72 : 0.8);
+        const innerFrameWidth = canvas.width * 0.9;
+        const textBoxWidth = innerFrameWidth * (isMobile ? 0.72 : 0.8);
         const textBoxHeight = this.textBox.height * (textBoxWidth / this.textBox.width);
         const textBoxX = (canvas.width - textBoxWidth) / 2;
-        const textBoxY = canvas.height - textBoxHeight - 20;
+        const textBoxY = canvas.height * 0.05 + canvas.height * 0.9 - textBoxHeight - 70;
 
-        const fontSize = isMobile ? 17 : 20;
-        const padding = isMobile ? 14 : 20;
-        const lineHeight = isMobile ? 21 : 24;
+        const fontSize = isMobile ? 16 : 20;
+        const padding = isMobile ? 12 : 20;
+        const lineHeight = isMobile ? 19 : 24;
         
         ctx.font = `${fontSize}px "MS Gothic"`;
         ctx.fillStyle = 'white';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
 
-        const textX = textBoxX + padding + textBoxWidth * 0.1;
+        const textX = textBoxX + padding + textBoxWidth * 0.08;
         const textY = textBoxY + padding;
         const maxWidth = textBoxWidth - 2 * padding;
 
