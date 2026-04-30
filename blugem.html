@@ -7,11 +7,45 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="script.js" defer></script>
     <title>Blue:Gem</title>
+    <style>
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: #f4f1ea;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        #myCanvas {
+            display: block;
+            width: min(100vw - 32px, 1000px);
+            height: auto;
+            max-height: calc(100vh - 32px);
+            border: 1px solid #000;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 8px;
+                align-items: stretch;
+            }
+
+            #myCanvas {
+                width: calc(100vw - 16px);
+                max-height: calc(100vh - 16px);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <canvas id="myCanvas" width="1000" height="800"
-        style="border:1px solid #000; display:block;margin: 90px auto;"></canvas>
+    <canvas id="myCanvas" width="1000" height="800"></canvas>
 
     <script>
         
@@ -33,6 +67,18 @@
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('myCanvas');
             const ctx = canvas.getContext('2d');
+
+            const fitCanvasToViewport = () => {
+                const isMobile = window.matchMedia('(max-width: 700px)').matches;
+                const maxWidth = isMobile ? window.innerWidth - 16 : Math.min(window.innerWidth - 32, 1000);
+                const width = Math.max(320, Math.floor(maxWidth));
+                const height = Math.floor(width * 0.8);
+
+                canvas.width = width;
+                canvas.height = Math.min(height, Math.floor(window.innerHeight - (isMobile ? 16 : 32)));
+            };
+
+            fitCanvasToViewport();
 
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
