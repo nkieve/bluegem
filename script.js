@@ -181,7 +181,9 @@ class TitleScreen {
     getTitleScale(canvas) {
         const widthScale = canvas.width / 1000;
         const heightScale = canvas.height / 800;
-        return Math.max(0.35, Math.min(widthScale, heightScale, 1));
+        const baseScale = Math.min(widthScale, heightScale, 1);
+        const isMobile = window.matchMedia('(max-width: 700px)').matches;
+        return isMobile ? Math.min(baseScale, 0.2) : Math.max(0.35, baseScale);
     }
 
     loadImage(src) {
