@@ -721,7 +721,7 @@ class NovelScene {
         ctx.textBaseline = 'top';
 
         const textX = textBoxX + padding + textBoxWidth * 0.08;
-        const textY = textBoxY + padding + (isMobile ? 0 : 20);
+        const textY = textBoxY + padding + (isMobile ? 0 : 20) + textBoxHeight * 0.20;
         const maxWidth = textBoxWidth - 2 * padding;
 
 
