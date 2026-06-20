@@ -76,7 +76,7 @@
         "When I was younger she would spend all her time with me.                            I really miss those days.",
         "It was all ruined when dad left us.",
         "She began to work more and more.                                       I guess she had no choice.",
-        "It made her quite stressed out.                                           She blamed me for a while too. She would talk about it often.",
+        "It made her quite stressed out.                                           She blamed me for a while too.                                        She would talk about it often.",
         "It really hurts.                                                      I wish I could make it better for her.",
         "Maybe I can do something special for her.                                   I want to see her smile again.",
         "If I recall right... she loves the flowers by the riverbank.                            Maybe I can pick some for her."
@@ -95,13 +95,13 @@
         "public/walkinghouse_audio.mp3"
       ],
       "lines": [
-        "Scurrying across the room, I look for a jacket to wear outside.",
+        "Scurrying across the room,                                        I look for a jacket to wear outside.",
         "It's quite cold outside, its that time of the year, after all.",
-        "I need some cash too, so I can afford the bus ride to the                              riverbanks.      The river is a bit far from here.",
+        "I need some cash too, so I can afford the bus ride to the riverbanks.      The river is a bit far from here.",
         "I remember my mother told me a story when I was little.",
         "The river... it's known to be a channel for the magic of a            certain Goddess...                                                        the people in my town revere and worship the river.",
         "It's as sacred to them as life is. They say the river has             potent spirtitual energies.                                            Maybe that's why mom likes the flowers there so much.",
-        "The elders of the town speak of 'Moksha' often...                           I think it means liberation, or release from suffering.",
+        "The elders of the town speak of 'Moksha' often...                           I think it means liberation,                                        or release from suffering.",
         "I'm not really sure about any of that,                                              but I think it's beautiful.",
         "To have something to believe in, and hold onto...                              in times of turmoil. ",
         "I should quickly check my room for the jacket and cash                              before heading out."
@@ -147,7 +147,7 @@
         "It's full of people. I don't really care for crowded places.",
         " They make me anxious. I think I am apalled by most people. ",
         " They feel so ingenuine and hollow... like empty shells.                              I try to avoid them as much as possible.",
-        "Sometimes I have no choice though. Today is one of those days.",
+        "Sometimes I have no choice though.                                        Today is one of those days.",
         "Overhearing the conversations of strangers makes me uneasy.",
         "I try to focus on the scenery outside the window instead.",
         "I really should've brought my earphones.",
@@ -232,10 +232,10 @@
         "I get really tired and overwhelmed when I'm outside for too                           long. It's hard to explain.",
         "I think it's because im rather asocial and introverted.                                      Crowds and noise drain me.",
         "I look at the river tide, as it ebbs and flows,                                         hitting the bank like a crash.",
-        "I see the flowers my mom likes alongside the river...                         although I do see some of them are stamped and crushed.",
-        "Perhaps it was the doing of the juvenile, or an animal.                                         Either way, it's disheartening to see.",
+        "I see the flowers my mom likes alongside the river...                  although I do see some of them are stamped and crushed.",
+        "Perhaps it was the doing of the juvenile, or an animal.                              Either way, it's disheartening to see.",
         "The mystical river..... that the elders of the town revere....                 I really wonder if the stories are true.",
-        "The so called 'Moksha' is also something western scholars                 speak of when using nature as a means of temporary escape from suffering.                                              The sublime.",
+        "The so called 'Moksha' is also something western scholars            speak of when using nature as a means of temporary escape from suffering. The sublime.",
         "I hear footsteps approaching in my direction...                            I hope it's Akagi."
       ]
     },
@@ -329,7 +329,7 @@
       ],
       "textbox": "public/oshur_box.png",
       "audio": [
-        "public/audio_mari.mp3"
+        "public/mar_mp3_restyle.mp3"
       ],
       "lines": [
         "What are you doing here?......",
@@ -349,7 +349,7 @@
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio_mari.mp3"
+        "public/mar_mp3_restyle.mp3"
       ],
       "lines": [
         "It's that horned lady.. from before......",
@@ -373,7 +373,7 @@
       ],
       "textbox": "public/oshur_box.png",
       "audio": [
-        "public/audio_mari.mp3"
+        "public/mar_mp3_restyle.mp3"
       ],
       "lines": [
         "Hmmmm... that makes sense......",
@@ -459,7 +459,7 @@
       ],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio_mari.mp3"
+        "public/instruments.mp3"
       ],
       "lines": [
         "I feel a force taking over me......",
