@@ -487,12 +487,18 @@ class NovelScene {
     }
 
     addReturnToTitleButton(canvas, ctx) {
+        const controlsBar = document.createElement('div');
+        controlsBar.style.position = 'absolute';
+        controlsBar.style.top = `${canvas.getBoundingClientRect().bottom + 8}px`;
+        controlsBar.style.left = '50%';
+        controlsBar.style.transform = 'translateX(-50%)';
+        controlsBar.style.display = 'flex';
+        controlsBar.style.alignItems = 'center';
+        controlsBar.style.gap = '20px';
+        controlsBar.style.zIndex = '9999';
+
         const returnButton = document.createElement('div');
         returnButton.innerText = '>> Return to Title Screen <<';
-        returnButton.style.position = 'absolute';
-        returnButton.style.top = `calc(${canvas.getBoundingClientRect().bottom}px + 10%)`;
-        returnButton.style.left = 'calc(50% - 9%)';
-        returnButton.style.transform = 'translateX(-50%)';
         returnButton.style.fontFamily = 'Arial, sans-serif';
         returnButton.style.fontSize = '18px';
         returnButton.style.color = 'black';
@@ -503,10 +509,6 @@ class NovelScene {
 
         const muteButton = document.createElement('div');
         muteButton.innerText = '>> Mute <<';
-        muteButton.style.position = 'absolute';
-        muteButton.style.top = `calc(${canvas.getBoundingClientRect().bottom}px + 10%)`;
-        muteButton.style.left = 'calc(30% - 9%)';
-        muteButton.style.transform = 'translateX(-50%)';
         muteButton.style.fontFamily = 'Arial, sans-serif';
         muteButton.style.fontSize = '18px';
         muteButton.style.color = 'black';
@@ -517,10 +519,6 @@ class NovelScene {
 
         const volUpButton = document.createElement('div');
         volUpButton.innerText = '>> Vol + <<';
-        volUpButton.style.position = 'absolute';
-        volUpButton.style.top = `calc(${canvas.getBoundingClientRect().bottom}px + 10%)`;
-        volUpButton.style.left = 'calc(70% - 9%)';
-        volUpButton.style.transform = 'translateX(-50%)';
         volUpButton.style.fontFamily = 'Arial, sans-serif';
         volUpButton.style.fontSize = '18px';
         volUpButton.style.color = 'black';
@@ -531,10 +529,6 @@ class NovelScene {
 
         const volDownButton = document.createElement('div');
         volDownButton.innerText = '>> Vol - <<';
-        volDownButton.style.position = 'absolute';
-        volDownButton.style.top = `calc(${canvas.getBoundingClientRect().bottom}px + 10%)`;
-        volDownButton.style.left = 'calc(90% - 9%)';
-        volDownButton.style.transform = 'translateX(-50%)';
         volDownButton.style.fontFamily = 'Arial, sans-serif';
         volDownButton.style.fontSize = '18px';
         volDownButton.style.color = 'black';
@@ -558,7 +552,7 @@ class NovelScene {
         autoButton.style.textAlign = 'center';
         autoButton.style.textShadow = 'none';
 
-        // simple grey pill look
+        
         autoButton.style.background = '#d0d0d0';
         autoButton.style.border = '1px solid #9a9a9a';
         autoButton.style.borderRadius = '6px';
@@ -611,20 +605,9 @@ class NovelScene {
         });
 
         returnButton.addEventListener('click', () => {
-
-            this.disableAuto();
-
-            console.log('Return to Title Screen button clicked');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const titleScreen = new TitleScreen();
-            titleScreen.setupHoverListeners(canvas, ctx);
-            titleScreen.draw(ctx, canvas);
-
-            returnButton.remove();
-            muteButton.remove();
-            volUpButton.remove();
-            volDownButton.remove();
-            autoButton.remove(); // NEW
+            const url = new URL(window.location.href);
+            url.searchParams.set('_refresh', Date.now().toString());
+            window.location.replace(url.toString());
         });
 
         muteButton.addEventListener('click', () => {
@@ -650,11 +633,11 @@ class NovelScene {
             }
         });
 
-
-        document.body.appendChild(returnButton);
-        document.body.appendChild(muteButton);
-        document.body.appendChild(volUpButton);
-        document.body.appendChild(volDownButton);
+    controlsBar.appendChild(returnButton);
+    controlsBar.appendChild(muteButton);
+    controlsBar.appendChild(volUpButton);
+    controlsBar.appendChild(volDownButton);
+    document.body.appendChild(controlsBar);
         document.body.appendChild(autoButton); // NEW
 
         console.log('Control buttons added to DOM');
@@ -695,10 +678,10 @@ class NovelScene {
             if (!this.autoMode) return;
             if (this.loadingOverlay?.isActive) return;
 
-            // Advance one line/scene
+            
             this.advanceSceneOrText(this._autoCtx, this._autoCanvas);
 
-            // Schedule next
+            
             this._scheduleAutoStep();
         }, this.autoAdvanceDelayMs);
     }
@@ -727,7 +710,7 @@ class NovelScene {
 
         ctx.save();
         ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-        ctx.shadowBlur = 4;
+        ctx.shadowBlur = 3;
         ctx.shadowOffsetX = 2;
         ctx.shadowOffsetY = 2;
 

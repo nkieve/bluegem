@@ -176,7 +176,7 @@
       "characters": [],
       "textbox": "public/lyra_box.png",
       "audio": [
-        "public/audio_minoyim.mp3",
+        "public/audio_minoyim.mp3", 
         "public/parkwalk_audio.mp3"
       ],
       "lines": [
@@ -190,14 +190,14 @@
         ".............................",
         ".............................",
         "It seems like a woman with horns...? That's odd.                                        It must be some kind of cosplay.",
-        "I dont remember there being any conventions around here lately.",
+        "I dont remember there being any conventions around here.",
         "I decide to walk past her quickly,                                          not wanting to engage in conversation.",
-        "I sense a really strange air from her. It's unsettling. Almost... nauseating.",
+        "I sense a really strange air from her. It's unsettling.                                           Almost... nauseating.",
         "I pick up my pace and hurry towards the riverbank.",
         ".............................",
-        ".............................",
-        ".............................",
-        "............................."
+        "...................",
+        "............",
+        "......"
       ]
     },
     {
@@ -227,7 +227,7 @@
       "lines": [
         "The smell of the river is refreshing. Gives you a sense of                          calm.",
         "They say humans are mostly made of water.",
-        "Maybe that's why being near water bodies makes us feel better.",
+        "Maybe that's why being near water bodies makes us                           feel better.",
         "I sit down by the riverbank and take a deep breath.",
         "I get really tired and overwhelmed when I'm outside for too                           long. It's hard to explain.",
         "I think it's because im rather asocial and introverted.                                      Crowds and noise drain me.",
@@ -235,7 +235,7 @@
         "I see the flowers my mom likes alongside the river...                  although I do see some of them are stamped and crushed.",
         "Perhaps it was the doing of the juvenile, or an animal.                              Either way, it's disheartening to see.",
         "The mystical river..... that the elders of the town revere....                 I really wonder if the stories are true.",
-        "The so called 'Moksha' is also something western scholars            speak of when using nature as a means of temporary escape from suffering. The sublime.",
+        "The so called 'Moksha' is also something western scholars            speak of when using nature as a means of temporary escape                           from suffering. The sublime.",
         "I hear footsteps approaching in my direction...                            I hope it's Akagi."
       ]
     },
@@ -496,7 +496,7 @@
       ],
       "lines": [
         "Every hundred years, Lady Shya selects a mortal worthy of                                         ascending to God-hood......",
-        "The cycle of rebirth and suffering seeks out a new vessel to host                                         her divine essence......",
+        "The cycle of rebirth and suffering seeks out a new vessel to                                      host her divine essence......",
         "What you mortals call 'gods' are merely vessels for higher                                         beings to channel their power through......",
         "Your affinity with the Blue Gem marks you as one such vessel......",
         "Your realm of origin is simply a multifaceted                                         information-cypher......",
